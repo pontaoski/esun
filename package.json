@@ -1,0 +1,22 @@
+{
+  "name": "esun",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Janet Blackquill <uhhadd@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@hotwired/stimulus": "^3.1.0",
+    "@hotwired/turbo": "^7.1.0",
+    "@tailwindcss/forms": "^0.5.2",
+    "@tailwindcss/typography": "^0.5.4",
+    "autoprefixer": "^10.4.8",
+    "postcss": "^8.4.16",
+    "stimulus-vite-helpers": "^3.0.0",
+    "tailwindcss": "^3.1.8",
+    "vite": "^3.0.9"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}

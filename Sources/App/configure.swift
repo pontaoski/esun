@@ -10,11 +10,16 @@ public func configure(_ app: Application) throws {
 
     app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
 
-    app.migrations.add(CreateTodo())
+    app.middleware.use(app.sessions.middleware)
+    app.middleware.use(User.sessionAuthenticator())
+    app.sessions.use(.fluent)
 
-    app.views.use(.leaf)
+    app.migrations.add(SessionRecord.migration)
+    app.migrations.add(CreateUser())
 
-    
+    app.views.use(.wrappedLeaf)
+
+    app.leaf.tags["uuidCorrection"] = UUIDCorrection()
 
     // register routes
     try routes(app)

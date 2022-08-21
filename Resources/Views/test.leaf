@@ -1,0 +1,14 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack">
+            <div class="folder">
+                <div class="folder-tab">
+                    #(app.user.username)
+                </div>
+                <div class="folder-body">
+                    <img src="https://crafthead.net/bust/#uuidCorrection(app.user.id)">
+                </div>
+            </div>
+        </div>
+    #endexport
+#endextend

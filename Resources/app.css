@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.folder-stack {
+    @apply m-4;
+}
+.folder {
+    @apply flex flex-col;
+    --border-color: #A1A1AA;
+    filter: drop-shadow(0px 1px 0 var(--border-color)) drop-shadow(0px -1px 0 var(--border-color)) drop-shadow(1px 0px 0 var(--border-color)) drop-shadow(-1px 0px 0 var(--border-color));
+}
+.folder-tab {
+    @apply bg-zinc-50;
+    @apply px-4 py-2;
+    @apply rounded-t;
+    width: fit-content;
+    z-index: 5;
+}
+.folder-body {
+    @apply bg-zinc-50;
+    @apply rounded-b rounded-tr;
+    @apply px-8 py-4;
+    width: fit-content;
+    z-index: 4;
+}

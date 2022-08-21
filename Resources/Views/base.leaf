@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	#if(app.environment == "development"):
+	<script type="module" src="http://localhost:5174/@vite/client"></script>
+	<script type="module" src="http://localhost:5174/Public/app.ts"></script>
+	#endif
+</head>
+
+<body>
+	<header> </header>
+	<main>
+		#import("body")
+	</main>
+</body>
+
+</html>

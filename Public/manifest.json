@@ -1,0 +1,14 @@
+{
+  "app.js": {
+    "file": "code.249fd2d0.js",
+    "src": "app.js",
+    "isEntry": true,
+    "css": [
+      "app.2ebe95f2.css"
+    ]
+  },
+  "app.css": {
+    "file": "app.2ebe95f2.css",
+    "src": "app.css"
+  }
+}

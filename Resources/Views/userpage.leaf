@@ -1,0 +1,39 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack">
+            #if(data.user != nil):
+            <div class="folder">
+                <div class="folder-tab">
+                    #(data.user.username)
+                </div>
+                <div class="folder-body flex flex-col items-center">
+                    <div class="flex flex-row items-center space-x-4">
+                        <img src="https://crafthead.net/bust/#uuidCorrection(data.user.id)">
+                        <div class="flex flex-col">
+                            <span class="text-xl">#(data.user.username)</span>
+                            #if(data.user.id == app.user.id):
+                            Diamonds: #(data.user.customer.diamondBalance) | Iron: #(data.user.customer.ironBalance)
+                            #endif
+                        </div>
+                    </div>
+                    <hr class="border-b w-full my-4">
+                    <div class="flex flex-row space-x-4">
+                        <a href="transfer-money">Transfer Money</a>
+                        <a href="deposit-code">Create A Deposit Code</a>
+                    </div>
+                </div>
+            </div>
+            #else:
+            <div class="folder">
+                <div class="folder-tab">
+                    User Not Found
+                </div>
+                <div class="folder-body text-center space-y-4 grid place-content-center">
+                    <div class="text-5xl">¯\_(ツ)_/¯</div>
+                    <div>User Not Found</span>
+                </div>
+            </div>
+            #endif
+        </div>
+    #endexport
+#endextend

@@ -3,6 +3,17 @@ import FluentSQLiteDriver
 import Leaf
 import Vapor
 
+struct AlwaysTrailingSlashMiddleware: AsyncMiddleware {
+    func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
+        if !request.url.path.hasSuffix("/") {
+            var new = request.url
+            new.path += "/"
+            return request.redirect(to: new.string)
+        }
+        return try await next.respond(to: request)
+    }
+}
+
 // configures your application
 public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder

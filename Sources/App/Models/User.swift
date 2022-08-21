@@ -44,7 +44,9 @@ final class User: Model, ModelSessionAuthenticatable {
         struct Resp: Codable {
             let id: String
         }
-        let it: Resp = try resp.content.decode(Resp.self)
+        guard let it: Resp = try? resp.content.decode(Resp.self) else {
+            return nil
+        }
         guard let id = UUID(fromMCUUID: it.id) else {
             return nil
         }

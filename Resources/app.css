@@ -22,5 +22,7 @@
     @apply rounded-b rounded-tr;
     @apply px-8 py-4;
     width: fit-content;
+    min-width: 36rem;
+    min-height: 24rem;
     z-index: 4;
 }

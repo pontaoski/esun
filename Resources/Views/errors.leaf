@@ -1,0 +1,7 @@
+<div>
+    #for(error in data.form.errors):
+    <div class="error">
+        #(error)
+    </div>
+    #endfor
+</div>

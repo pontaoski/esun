@@ -1,14 +1,14 @@
 #extend("base"):
     #export("body"):
-        <div class="folder-stack">
+        <div class="folder-stack" data-controller="folder">
             #if(data.user != nil):
-            <div class="folder">
-                <div class="folder-tab">
+            <turbo-frame class="folder" id="user_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/" data-action="folder#pop">
                     #(data.user.username)
-                </div>
+                </a>
                 <div class="folder-body flex flex-col items-center">
                     <div class="flex flex-row items-center space-x-4">
-                        <img src="https://crafthead.net/bust/#uuidCorrection(data.user.id)">
+                        <img class="#if(!data.user.created): grayscale #endif" src="https://crafthead.net/bust/#uuidCorrection(data.user.id)">
                         <div class="flex flex-col">
                             <span class="text-xl">#(data.user.username)</span>
                             #if(data.user.id == app.user.id):
@@ -17,14 +17,24 @@
                         </div>
                     </div>
                     <hr class="border-b w-full my-4">
+                    #if(!data.user.created):
+                    <p class="text-center">
+                        This user has not created an account yet. <br>
+                        You will still be able to transfer funds to them,
+                        but they will not be notified of it.
+                    </p>
+                    <hr class="border-b w-full my-4">
+                    #endif
                     <div class="flex flex-row space-x-4">
-                        <a href="transfer-money">Transfer Money</a>
-                        <a href="deposit-code">Create A Deposit Code</a>
+                        <a class="button" href="transfer-funds" data-action="folder#push">Transfer Funds</a>
+                        #if(data.user.id == app.user.id):
+                        <a class="button" href="deposit-code">Create A Deposit Code</a>
+                        #endif
                     </div>
                 </div>
-            </div>
+            </turbo-frame>
             #else:
-            <div class="folder">
+            <turbo-frame class="folder" id="user_page">
                 <div class="folder-tab">
                     User Not Found
                 </div>
@@ -32,7 +42,7 @@
                     <div class="text-5xl">¯\_(ツ)_/¯</div>
                     <div>User Not Found</span>
                 </div>
-            </div>
+            </turbo-frame>
             #endif
         </div>
     #endexport

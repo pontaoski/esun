@@ -55,6 +55,15 @@
       }
     },
     {
+      "identity" : "jsonvalue",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rexmas/JSONValue.git",
+      "state" : {
+        "revision" : "696916c028fdb0e30ec2771639135172700d424c",
+        "version" : "7.2.0"
+      }
+    },
+    {
       "identity" : "leaf",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/leaf.git",

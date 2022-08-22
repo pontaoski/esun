@@ -1,0 +1,14 @@
+<turbo-stream action="append" targets=".folder-stack">
+    <template>
+        <div class="folder">
+            <div class="folder-tab">
+                Funds Successfully Transferred
+            </div>
+            <div class="folder-body">
+                <p>
+                    You've successfully transferred #(data.form.ironAmount)i #(data.form.diamondAmount)d to #(data.form.to).
+                </p>
+            </div>
+        </div>
+    </template>
+</turbo-stream>

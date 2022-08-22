@@ -20,6 +20,7 @@ public func configure(_ app: Application) throws {
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 
     app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
+    app.databases.middleware.use(AuditLogEntry.Validator())
 
     app.middleware.use(app.sessions.middleware)
     app.middleware.use(User.sessionAuthenticator())
@@ -27,6 +28,7 @@ public func configure(_ app: Application) throws {
 
     app.migrations.add(SessionRecord.migration)
     app.migrations.add(CreateUser())
+    app.migrations.add(CreateAuditLog())
 
     app.views.use(.wrappedLeaf)
 

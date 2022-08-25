@@ -29,6 +29,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(SessionRecord.migration)
     app.migrations.add(CreateUser())
     app.migrations.add(CreateAuditLog())
+    app.migrations.add(CreateRole())
 
     app.views.use(.wrappedLeaf)
 

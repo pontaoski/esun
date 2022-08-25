@@ -1,0 +1,29 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack" data-controller="folder">
+            <turbo-frame class="folder" id="user_page" src="/accounts/#(data.user.username)/">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/">
+                    #(data.user.username)
+                </a>
+                <div class="folder-body"></div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="adjust_balance_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/teller/adjust-balance" data-action="folder#pop">
+                    Adjust Balance
+                </a>
+                <div class="folder-body">
+                </div>
+            </turbo-frame>
+            <div class="folder">
+                <div class="folder-tab">
+                    Balance Successfully Adjusted
+                </div>
+                <div class="folder-body">
+                    <p>
+                        You've successfully adjusted #(data.form.to)'s balance by #(data.form.ironAmount)i #(data.form.diamondAmount)d.
+                    </p>
+                </div>
+            </div>
+        </div>
+    #endexport
+#endextend

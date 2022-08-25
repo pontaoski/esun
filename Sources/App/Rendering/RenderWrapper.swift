@@ -17,6 +17,7 @@ struct AppData: Codable {
 
     internal init(from req: Request) async throws {
         self.user = req.auth.get()
+        try await self.user?.$customer.load(on: req.db)
         self.environment = req.application.environment.name
     }
 }

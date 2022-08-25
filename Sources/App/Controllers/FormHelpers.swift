@@ -6,6 +6,14 @@ protocol FormData: Codable {
     init()
 }
 
+extension FormData {
+    func with(_ adjust: (inout Self) -> Void) -> Self {
+        var new = self
+        adjust(&new)
+        return new
+    }
+}
+
 enum FormPageResponse<Page: FormPage, Success: Codable> {
     case form(Page)
     case response(Response)

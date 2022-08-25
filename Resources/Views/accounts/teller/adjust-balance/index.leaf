@@ -1,0 +1,37 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack" data-controller="folder">
+            <turbo-frame class="folder" id="user_page" src="/accounts/#(data.user.username)/">
+                <a class="folder-tab">
+                    #(data.user.username)
+                </a>
+                <div class="folder-body"></div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="adjust_balance_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/teller/adjust-balance" data-action="folder#pop">
+                    Adjust Balance
+                </a>
+                <div class="folder-body flex flex-col items-center">
+                    <form method="POST" class="flex flex-col space-y-4">
+                        <div>
+                            <label for="to">Adjust Balance For:</label>
+                            <input id="to" name="to" type="text" value="#(data.form.to)">
+                        </div>
+                        <div>
+                            <label for="ironAmount">Iron Amount:</label>
+                            <input id="ironAmount" name="ironAmount" type="number" min="0" value="#(data.form.ironAmount)">
+                        </div>
+                        <div>
+                            <label for="diamondAmount">Diamond Amount:</label>
+                            <input id="diamondAmount" name="diamondAmount" type="number" min="0" value="#(data.form.diamondAmount)">
+                        </div>
+                        <input type="submit" value="Adjust">
+                    </form>
+                    <div id="errors">
+                        #extend("errors")
+                    </div>
+                </div>
+            </turbo-frame>
+        </div>
+    #endexport
+#endextend

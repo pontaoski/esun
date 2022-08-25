@@ -16,10 +16,12 @@
                     <div class="bg-white px-4 py-2 rounded shadow">
                     #if(item.kind == "moneyTransfer"):
                     <span>#customerLink(item.initiator) sent #(item.data.moneyTransfer.iron)i #(item.data.moneyTransfer.diamonds)d to #customerLink(item.recipient)</span>
-                    <span class="opacity-50">#date(item.createdAt, "HH:mm dd.MM.yyyy")</span>
+                    #elseif(item.kind == "balanceAdjustment"):
+                    <span>Teller #customerLink(item.initiator) adjusted #customerLink(item.recipient)'s balance by #(item.data.balanceAdjustment.iron)i #(item.data.balanceAdjustment.diamonds)d</span>
                     #else:
                     TODO
                     #endif
+                    <span class="opacity-50">#date(item.createdAt, "HH:mm dd.MM.yyyy")</span>
                     </div>
                     #endfor
                 </div>

@@ -15,6 +15,27 @@ extension UUID {
     }
 }
 
+enum SiteRole: String, Codable {
+    case admin
+    case teller
+    case user
+
+    static func >=(lhs: SiteRole, rhs: SiteRole) -> Bool {
+        switch (lhs, rhs) {
+        case (.admin, _):
+            return true
+        case (_, .admin):
+            return false
+        case (.teller, _):
+            return true
+        case (_, .teller):
+            return false
+        default:
+            return true
+        }
+    }
+}
+
 final class User: Model, ModelSessionAuthenticatable {
     static let schema = "users"
 
@@ -29,6 +50,35 @@ final class User: Model, ModelSessionAuthenticatable {
 
     @Parent(key: "customer_id")
     var customer: Customer
+
+    @Enum(key: "role")
+    var role: SiteRole
+
+    var teller: Bool { role >= .teller }
+    var admin: Bool { role >= .admin }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: WriteCodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.username, forKey: .username)
+        try container.encode(self.created, forKey: .created)
+        if let customer = self.$customer.value {
+            try container.encode(customer, forKey: .customer)
+        }
+        try container.encode(self.role, forKey: .role)
+        try container.encode(self.teller, forKey: .teller)
+        try container.encode(self.admin, forKey: .admin)
+    }
+
+    enum WriteCodingKeys: String, CodingKey {
+        case id
+        case username
+        case created
+        case customer
+        case role
+        case teller
+        case admin
+    }
 
     init() { }
 

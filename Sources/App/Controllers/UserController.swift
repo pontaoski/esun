@@ -23,10 +23,10 @@ struct TransferPage: FormPage {
             throw Abort(.notFound)
         }
         guard let recipient = try await User.get(for: data.to, on: request) else {
-            return .form(TransferPage(user: them, form: Form(errors: ["User \(data.to) not found"])))
+            return .form(TransferPage(user: them, form: data.with { $0.errors = ["User \(data.to) not found"] }))
         }
         guard them.id == user.id || them.id == recipient.id else {
-            return .form(TransferPage(user: them, form: Form(errors: ["You seem to be trying to transfer money to \(them.username), but you typed \(recipient.username) instead."])))
+            return .form(TransferPage(user: them, form: data.with { $0.errors = ["You seem to be trying to transfer money to \(them.username), but you typed \(recipient.username) instead."] }))
         }
 
         return try await request.db.transaction { db in
@@ -43,6 +43,7 @@ struct TransferPage: FormPage {
     }
     static func initial(on request: Request) async throws -> TransferPage {
         let me: User = try request.auth.require()
+        try await me.$customer.load(on: request.db)
         guard let them: User = try await User.get(for: request.parameters.get("username")!, on: request) else {
             throw Abort(.notFound)
         }

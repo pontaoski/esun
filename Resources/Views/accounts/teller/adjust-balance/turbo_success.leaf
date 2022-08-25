@@ -1,0 +1,14 @@
+<turbo-stream action="append" targets=".folder-stack">
+    <template>
+        <div class="folder">
+            <div class="folder-tab">
+                Balance Successfully Adjusted
+            </div>
+            <div class="folder-body">
+                <p>
+                    You've successfully adjusted #(data.form.to)'s balance by #(data.form.ironAmount)i #(data.form.diamondAmount)d.
+                </p>
+            </div>
+        </div>
+    </template>
+</turbo-stream>

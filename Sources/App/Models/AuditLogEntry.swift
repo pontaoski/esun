@@ -7,9 +7,11 @@ final class AuditLogEntry: Model {
 
     enum Kind: String, Codable {
         case moneyTransfer
+        case balanceAdjustment
     }
     enum Data: Codable {
         case moneyTransfer(iron: Int, diamonds: Int)
+        case balanceAdjustment(iron: Int, diamonds: Int)
     }
     struct Validator: AsyncModelMiddleware {
         func create(model: AuditLogEntry, on db: Database, next: AnyAsyncModelResponder) async throws {
@@ -26,6 +28,10 @@ final class AuditLogEntry: Model {
             switch model.kind {
             case .moneyTransfer:
                 guard case .moneyTransfer = decoded else {
+                    throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
+                }
+            case .balanceAdjustment:
+                guard case .balanceAdjustment = decoded else {
                     throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
                 }
             }
@@ -81,6 +87,29 @@ final class AuditLogEntry: Model {
 
         let involvement2 = AuditLogInvolvement()
         involvement2.$customer.id = from.id!
+        involvement2.$entry.id = entry.id!
+        involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
+
+        let involvement = AuditLogInvolvement()
+        involvement.$customer.id = to.id!
+        involvement.$entry.id = entry.id!
+        involvement.role = "recipient"
+
+        try await involvement.save(on: db)
+    }
+
+    /// assumes database is in a transaction
+    static func logAdjustment(teller: Customer, to: Customer, iron: Int, diamonds: Int, on db: Database) async throws {
+        let entry = AuditLogEntry()
+        entry.kind = .balanceAdjustment
+        entry.data = try JSONValue.decode(JSONEncoder().encode(Data.balanceAdjustment(iron: iron, diamonds: diamonds)))
+
+        try await entry.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = teller.id!
         involvement2.$entry.id = entry.id!
         involvement2.role = "initiator"
 

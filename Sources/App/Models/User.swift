@@ -36,6 +36,7 @@ final class User: Model, ModelSessionAuthenticatable {
         self.id = id
         self.username = username
         self.created = false
+        self.$customer.value = customer
         self.$customer.id = customer.id!
     }
 

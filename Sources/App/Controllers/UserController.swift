@@ -58,6 +58,7 @@ struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let group = routes.grouped("accounts")
         group.grouped(AlwaysTrailingSlashMiddleware()).get(":username", use: account)
+        group.get(":username", "audit-log", use: auditLog)
         group.get("@me") { req -> Response in
             let who: User = try req.auth.require()
             return req.redirect(to: "/accounts/\(who.username)")
@@ -71,5 +72,28 @@ struct UserController: RouteCollection {
         let username = req.parameters.get("username")!
         let user = try await User.get(for: username, on: req)
         return try await req.view.render("accounts/user", UserpageData(user: user))
+    }
+    struct AuditLogPageData: Codable {
+        let user: User
+        let pages: Page<AuditLogEntry>
+    }
+    func auditLog(req: Request) async throws -> View {
+        let username = req.parameters.get("username")!
+        guard let user = try await User.get(for: username, on: req) else {
+            throw Abort(.notFound)
+        }
+        let me: User = try req.auth.require()
+        guard user.id == me.id else {
+            throw Abort(.unauthorized)
+        }
+        try await me.$customer.load(on: req.db)
+        let results = try await AuditLogEntry.query(on: req.db)
+            .join(AuditLogInvolvement.self, on: \AuditLogEntry.$id == \AuditLogInvolvement.$entry.$id)
+            .filter(AuditLogInvolvement.self, \.$customer.$id == me.customer.id!)
+            .with(\.$involved) { $0.with(\.$customer) { $0.with(\.$user) } }
+            .sort(\.$createdAt, .descending)
+            .paginate(for: req)
+
+        return try await req.view.render("accounts/audit-log/index", AuditLogPageData(user: user, pages: results))
     }
 }

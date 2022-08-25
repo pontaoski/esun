@@ -33,6 +33,7 @@ public func configure(_ app: Application) throws {
     app.views.use(.wrappedLeaf)
 
     app.leaf.tags["uuidCorrection"] = UUIDCorrection()
+    app.leaf.tags["customerLink"] = CustomerRenderer()
 
     // register routes
     try routes(app)

@@ -13,6 +13,9 @@ final class Customer: Model {
     @Field(key: "diamond_balance")
     var diamondBalance: Int
 
+    @OptionalChild(for: \.$customer)
+    var user: User?
+
     init() {
     }
 

@@ -1,0 +1,29 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack" data-controller="folder">
+            <turbo-frame class="folder" id="user_page" src="/accounts/#(data.user.username)/">
+                <a class="folder-tab">
+                    #(data.user.username)
+                </a>
+                <div class="folder-body"></div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="audit_log_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/audit-log" data-action="folder#pop">
+                    Audit Log
+                </a>
+                <div class="folder-body flex flex-col space-y-4">
+                    #for(item in data.pages.items):
+                    <div class="bg-white px-4 py-2 rounded shadow">
+                    #if(item.kind == "moneyTransfer"):
+                    <span>#customerLink(item.initiator) sent #(item.data.moneyTransfer.iron)i #(item.data.moneyTransfer.diamonds)d to #customerLink(item.recipient)</span>
+                    <span class="opacity-50">#date(item.createdAt, "HH:mm dd.MM.yyyy")</span>
+                    #else:
+                    TODO
+                    #endif
+                    </div>
+                    #endfor
+                </div>
+            </turbo-frame>
+        </div>
+    #endexport
+#endextend

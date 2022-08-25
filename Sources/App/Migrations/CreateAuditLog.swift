@@ -9,7 +9,6 @@ struct CreateAuditLog: AsyncMigration {
         try await database.schema("audit_log_entries")
             .id()
             .field("created_at", .datetime, .required)
-            .field("initiated_by", .uuid, .required, .references("customers", .id))
             .field("kind", kindEnum, .required)
             .field("data", .json, .required)
             .create()

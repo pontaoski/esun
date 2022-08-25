@@ -38,9 +38,6 @@ final class AuditLogEntry: Model {
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
 
-    @Parent(key: "initiated_by")
-    var initiatedBy: Customer
-
     @Enum(key: "kind")
     var kind: Kind
 
@@ -51,15 +48,43 @@ final class AuditLogEntry: Model {
     var involved: [AuditLogInvolvement]
 
     var recipient: Customer? { involved.get(role: "recipient") }
+    var initiator: Customer? { involved.get(role: "initiator") }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: WriteCodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.createdAt, forKey: .createdAt)
+        try container.encode(self.kind, forKey: .kind)
+        try container.encode(self.data, forKey: .data)
+        try container.encode(self.involved, forKey: .involved)
+        try container.encode(self.recipient, forKey: .recipient)
+        try container.encode(self.initiator, forKey: .initiator)
+    }
+
+    enum WriteCodingKeys: String, CodingKey {
+        case id
+        case createdAt
+        case kind
+        case data
+        case involved
+        case recipient
+        case initiator
+    }
 
     /// assumes database is in a transaction
     static func logTransfer(from: Customer, to: Customer, iron: Int, diamonds: Int, on db: Database) async throws {
         let entry = AuditLogEntry()
-        entry.$initiatedBy.id = from.id!
         entry.kind = .moneyTransfer
         entry.data = try JSONValue.decode(JSONEncoder().encode(Data.moneyTransfer(iron: iron, diamonds: diamonds)))
 
         try await entry.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = from.id!
+        involvement2.$entry.id = entry.id!
+        involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
 
         let involvement = AuditLogInvolvement()
         involvement.$customer.id = to.id!

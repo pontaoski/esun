@@ -9,8 +9,20 @@
 	#endif
 </head>
 
-<body>
-	<header> </header>
+<body data-controller="folder">
+	<header class="w-full border-b border-black p-1 flex flex-row justify-between">
+		<div>
+			#if(app.user != nil):
+			User: #(app.user.username)
+			#endif
+		</div>
+		<div>
+			Esun Bank
+		</div>
+		<div data-folder-target="escape">
+			ESC: Orwell
+		</div>
+	</header>
 	<main>
 		#import("body")
 	</main>

@@ -1,6 +1,6 @@
 #extend("base"):
     #export("body"):
-        <div class="folder-stack" data-controller="folder">
+        <div class="folder-stack" data-folder-target="stack">
             #if(data.user != nil):
             <turbo-frame class="folder" id="user_page">
                 <a class="folder-tab" href="/accounts/#(data.user.username)/" data-action="folder#pop">

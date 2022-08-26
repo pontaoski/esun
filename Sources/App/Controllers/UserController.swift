@@ -46,6 +46,7 @@ struct CreateDepositCodePage: FormPage {
         return try await request.db.transaction { db in
             user.customer.ironBalance -= data.ironAmount
             user.customer.diamondBalance -= data.diamondAmount
+            try await user.customer.save(on: db)
 
             let depositCode = DepositCode(code: code.replacingOccurrences(of: "-", with: ""), iron: data.ironAmount, diamonds: data.diamondAmount, creator: user.customer)
             try await depositCode.create(on: db)

@@ -37,6 +37,9 @@ struct CreateDepositCodePage: FormPage {
         guard data.ironAmount > 0 || data.diamondAmount > 0 else {
             return .form(CreateDepositCodePage(user: user, form: data.error("You can't create a deposit code without money!")))
         }
+        guard !(data.ironAmount < 0 || data.diamondAmount < 0) else {
+            return .form(CreateDepositCodePage(user: user, form: data.error("You can't create a deposit code for a negative amount of money!")))
+        }
         guard user.customer.ironBalance >= data.ironAmount && user.customer.diamondBalance >= data.diamondAmount else {
             return .form(CreateDepositCodePage(user: user, form: data.error("You don't have enough balance to make a deposit code with that much money!")))
         }
@@ -95,6 +98,9 @@ struct TransferPage: FormPage {
         }
         guard them.id == user.id || them.id == recipient.id else {
             return .form(TransferPage(user: them, form: data.with { $0.errors = ["You seem to be trying to transfer money to \(them.username), but you typed \(recipient.username) instead."] }))
+        }
+        guard !(data.ironAmount < 0 || data.diamondAmount < 0) else {
+            return .form(TransferPage(user: user, form: data.error("You can't send a negative amount of money!")))
         }
 
         return try await request.db.transaction { db in

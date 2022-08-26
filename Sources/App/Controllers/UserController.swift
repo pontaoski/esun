@@ -1,6 +1,73 @@
 import Fluent
 import Vapor
 
+func randomString(length: Int) -> String {
+    let letters = "abcdefghijklmnopqrstuvwxyz0123456789"
+    return String((0..<length).map{ _ in letters.randomElement()! })
+}
+
+struct CreateDepositCodePage: FormPage {
+    static let page = "accounts/create-deposit-code/"
+    static let route = PathComponent("create-deposit-code")
+
+    struct Form: FormData {
+        var ironAmount: Int = 0
+        var diamondAmount: Int = 0
+        var errors: [String] = []
+    }
+    struct Success: Codable {
+        var depositCode: String = ""
+        var ironAmount: Int = 0
+        var diamondAmount: Int = 0
+    }
+
+    let user: User
+    let form: Form
+
+    static func submit(form data: Form, on request: Request) async throws -> FormPageResponse<CreateDepositCodePage, Success> {
+        let user: User = try request.auth.require()
+        try await user.$customer.load(on: request.db)
+        guard let them: User = try await User.get(for: request.parameters.get("username")!, on: request) else {
+            throw Abort(.notFound)
+        }
+        guard user.id == them.id else {
+            throw Abort(.forbidden)
+        }
+
+        guard data.ironAmount > 0 || data.diamondAmount > 0 else {
+            return .form(CreateDepositCodePage(user: user, form: data.error("You can't create a deposit code without money!")))
+        }
+        guard user.customer.ironBalance >= data.ironAmount && user.customer.diamondBalance >= data.diamondAmount else {
+            return .form(CreateDepositCodePage(user: user, form: data.error("You don't have enough balance to make a deposit code with that much money!")))
+        }
+
+        let code = randomString(length: 3) + "-" + randomString(length: 3) + "-" + randomString(length: 4)
+
+        return try await request.db.transaction { db in
+            user.customer.ironBalance -= data.ironAmount
+            user.customer.diamondBalance -= data.diamondAmount
+
+            let depositCode = DepositCode(code: code.replacingOccurrences(of: "-", with: ""), iron: data.ironAmount, diamonds: data.diamondAmount, creator: user.customer)
+            try await depositCode.create(on: db)
+
+            try await AuditLogEntry.logCreateDepositCode(by: user.customer, code: code, iron: data.ironAmount, diamonds: data.diamondAmount, on: db)
+
+            return .success(Success(depositCode: code, ironAmount: data.ironAmount, diamondAmount: data.diamondAmount))
+        }
+    }
+    static func initial(on request: Request) async throws -> CreateDepositCodePage {
+        let me: User = try request.auth.require()
+        try await me.$customer.load(on: request.db)
+        guard let them: User = try await User.get(for: request.parameters.get("username")!, on: request) else {
+            throw Abort(.notFound)
+        }
+        guard me.id == them.id else {
+            throw Abort(.forbidden)
+        }
+        return CreateDepositCodePage(user: me, form: Form())
+    }
+}
+
 struct TransferPage: FormPage {
     static let page = "accounts/transfer-funds/"
     static let route = PathComponent("transfer-funds")
@@ -65,6 +132,7 @@ struct UserController: RouteCollection {
             return req.redirect(to: "/accounts/\(who.username)")
         }
         TransferPage.register(to: group.grouped(":username"))
+        CreateDepositCodePage.register(to: group.grouped(":username"))
     }
     struct UserpageData: Codable {
         let user: User?

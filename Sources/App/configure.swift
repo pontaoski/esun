@@ -30,6 +30,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateUser())
     app.migrations.add(CreateAuditLog())
     app.migrations.add(CreateRole())
+    app.migrations.add(CreateDepositCode())
 
     app.views.use(.wrappedLeaf)
 

@@ -1,0 +1,5 @@
+<turbo-stream action="append" targets=".folder-stack">
+    <template>
+        #extend("accounts/create-deposit-code/success_message")
+    </template>
+</turbo-stream>

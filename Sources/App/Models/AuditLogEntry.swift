@@ -8,10 +8,12 @@ final class AuditLogEntry: Model {
     enum Kind: String, Codable {
         case moneyTransfer
         case balanceAdjustment
+        case createDepositCode
     }
     enum Data: Codable {
         case moneyTransfer(iron: Int, diamonds: Int)
         case balanceAdjustment(iron: Int, diamonds: Int)
+        case createDepositCode(code: String, iron: Int, diamonds: Int)
     }
     struct Validator: AsyncModelMiddleware {
         func create(model: AuditLogEntry, on db: Database, next: AnyAsyncModelResponder) async throws {
@@ -32,6 +34,10 @@ final class AuditLogEntry: Model {
                 }
             case .balanceAdjustment:
                 guard case .balanceAdjustment = decoded else {
+                    throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
+                }
+            case .createDepositCode:
+                guard case .createDepositCode = decoded else {
                     throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
                 }
             }
@@ -75,6 +81,22 @@ final class AuditLogEntry: Model {
         case involved
         case recipient
         case initiator
+    }
+
+    /// assumes database is in a transaction
+    static func logCreateDepositCode(by: Customer, code: String, iron: Int, diamonds: Int, on db: Database) async throws {
+        let entry = AuditLogEntry()
+        entry.kind = .createDepositCode
+        entry.data = try JSONValue.decode(JSONEncoder().encode(Data.createDepositCode(code: code, iron: iron, diamonds: diamonds)))
+
+        try await entry.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = by.id!
+        involvement2.$entry.id = entry.id!
+        involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
     }
 
     /// assumes database is in a transaction

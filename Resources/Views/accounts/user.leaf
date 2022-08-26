@@ -30,7 +30,7 @@
                             <a class="button" href="transfer-funds" data-id="transfer_funds_page" data-action="folder#push">Transfer Funds</a>
                             #if(data.user.id == app.user.id):
                             <a class="button" href="audit-log" data-id="audit_log_page" data-action="folder#push">My Audit Log</a>
-                            <a class="button" href="deposit-code">Create A Deposit Code</a>
+                            <a class="button" href="create-deposit-code" data-id="create_deposit_code_page" data-action="folder#push">Create A Deposit Code</a>
                             #endif
                         </div>
                         <div class="flex flex-row space-x-4">

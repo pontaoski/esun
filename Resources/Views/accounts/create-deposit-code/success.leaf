@@ -1,0 +1,20 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack" data-controller="folder">
+            <turbo-frame class="folder" id="user_page" src="/accounts/#(data.user.username)/">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/">
+                    #(data.user.username)
+                </a>
+                <div class="folder-body"></div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="create_deposit_code_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/create-deposit-code" data-action="folder#pop">
+                    Create A Deposit Code
+                </a>
+                <div class="folder-body">
+                </div>
+            </turbo-frame>
+            #extend("accounts/create-deposit-code/success_message")
+        </div>
+    #endexport
+#endextend

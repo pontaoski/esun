@@ -2,7 +2,7 @@ import Fluent
 import Vapor
 
 protocol FormData: Codable {
-    var errors: [String] { get }
+    var errors: [String] { get set }
     init()
 }
 
@@ -11,6 +11,9 @@ extension FormData {
         var new = self
         adjust(&new)
         return new
+    }
+    func error(_ what: String...) -> Self {
+        self.with { $0.errors = what }
     }
 }
 

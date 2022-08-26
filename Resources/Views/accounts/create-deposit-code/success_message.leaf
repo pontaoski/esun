@@ -1,0 +1,13 @@
+<div class="folder">
+    <div class="folder-tab">
+        Deposit Code Successfully Created
+    </div>
+    <div class="folder-body space-y-4">
+        <p class="w-full text-center text-3xl">
+            #(data.depositCode)
+        </p>
+        <p>
+            You can now give this deposit code to someone else.
+        </p>
+    </div>
+</div>

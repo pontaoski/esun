@@ -1,0 +1,39 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack" data-controller="folder">
+            <turbo-frame class="folder" id="user_page" src="/accounts/#(data.user.username)/">
+                <a class="folder-tab">
+                    #(data.user.username)
+                </a>
+                <div class="folder-body"></div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="create_deposit_code_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/create-deposit-code" data-action="folder#pop">
+                    Create A Deposit Code
+                </a>
+                <div class="folder-body flex flex-col items-center">
+                    <form method="POST" class="flex flex-col space-y-4">
+                        <div>
+                            <label for="ironAmount">Iron Amount:</label>
+                            <input id="ironAmount" name="ironAmount" type="number" min="0" value="#(data.form.ironAmount)">
+                        </div>
+                        <div>
+                            <label for="diamondAmount">Diamond Amount:</label>
+                            <input id="diamondAmount" name="diamondAmount" type="number" min="0" value="#(data.form.diamondAmount)">
+                        </div>
+                        <input type="submit" value="Create Deposit Code">
+                    </form>
+                    <div id="errors">
+                        #extend("errors")
+                    </div>
+                    <p class="max-w-lg">
+                        You can move some funds from your account into a deposit code, which will allow
+                        whoever has the code to receive the funds into their own account.
+                        If you want to give funds to a specific player directly, you should do a direct
+                        transfer.
+                    </p>
+                </div>
+            </turbo-frame>
+        </div>
+    #endexport
+#endextend

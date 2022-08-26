@@ -18,6 +18,8 @@
                     <span>#customerLink(item.initiator) sent #(item.data.moneyTransfer.iron)i #(item.data.moneyTransfer.diamonds)d to #customerLink(item.recipient)</span>
                     #elseif(item.kind == "balanceAdjustment"):
                     <span>Teller #customerLink(item.initiator) adjusted #customerLink(item.recipient)'s balance by #(item.data.balanceAdjustment.iron)i #(item.data.balanceAdjustment.diamonds)d</span>
+                    #elseif(item.kind == "createDepositCode"):
+                    <span>#customerLink(item.initiator) created a deposit code for #(item.data.createDepositCode.iron)i #(item.data.createDepositCode.diamonds)d</span>
                     #else:
                     TODO
                     #endif

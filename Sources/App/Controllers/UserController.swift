@@ -134,6 +134,7 @@ struct UserController: RouteCollection {
         let group = routes.grouped("accounts")
         group.grouped(AlwaysTrailingSlashMiddleware()).get(":username", use: account)
         group.get(":username", "audit-log", use: auditLog)
+        group.get(":username", "shops", use: shops)
         group.get("@me") { req -> Response in
             let who: User = try req.auth.require()
             return req.redirect(to: "/accounts/\(who.username)")
@@ -171,5 +172,21 @@ struct UserController: RouteCollection {
             .paginate(for: req)
 
         return try await req.view.render("accounts/audit-log/index", AuditLogPageData(user: user, pages: results))
+    }
+    struct ShopsPageData: Codable {
+        let user: User
+        let pages: Page<Shop>
+    }
+    func shops(req: Request) async throws -> View {
+        let username = req.parameters.get("username")!
+        guard let user = try await User.get(for: username, on: req) else {
+            throw Abort(.notFound)
+        }
+
+        let results = try await Shop.query(on: req.db)
+            .filter(\.$owner.$id == user.customer.id!)
+            .paginate(for: req)
+
+        return try await req.view.render("accounts/shops/index", ShopsPageData(user: user, pages: results))
     }
 }

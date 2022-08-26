@@ -19,10 +19,9 @@
 			#endif
 		</div>
 		<div>
-			Esun Bank
+			Esun <span class="text-sm">by <span class="font-bold text-[#649832]">Solitude</span> Corporation</span>
 		</div>
 		<div data-folder-target="escape">
-			ESC: Orwell
 		</div>
 	</header>
 	<main>

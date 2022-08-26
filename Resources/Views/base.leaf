@@ -14,6 +14,8 @@
 		<div>
 			#if(app.user != nil):
 			User: #(app.user.username)
+			#else:
+			<a href="/auth/login">Log In</a>
 			#endif
 		</div>
 		<div>

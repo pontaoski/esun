@@ -29,7 +29,7 @@
                     #endif
                     #if(data.user.id == app.user.id):
                     <div class="text-center">
-                        <a href="./shops/create-shop" class="button">Create A Shop</a>
+                        <a href="./shops/create-shop" data-action="folder#push" data-id="create_shop_page" class="button">Create A Shop</a>
                     </div>
                     #endif
                 </div>

@@ -1,0 +1,39 @@
+#extend("base"):
+    #export("body"):
+        <div class="folder-stack" data-folder-target="stack">
+            <turbo-frame class="folder" id="user_page" src="/accounts/#(data.user.username)/">
+                <a class="folder-tab">
+                    #(data.user.username)
+                </a>
+                <div class="folder-body"></div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="shops_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/shops" data-action="folder#pop">
+                    #(data.user.username)'s Shops
+                </a>
+                <div class="folder-body"> </div>
+            </turbo-frame>
+            <turbo-frame class="folder" id="create_shop_page">
+                <a class="folder-tab" href="/accounts/#(data.user.username)/shops/create-shop" data-action="folder#pop">
+                    Create A Shop
+                </a>
+                <div class="folder-body flex flex-col items-center">
+                    <form method="POST" class="flex flex-col space-y-4" data-controller="slug">
+                        <div>
+                            <label for="shopName">Shop Name:</label>
+                            <input id="shopName" name="shopName" type="text" value="#(data.form.shopName)" data-action="slug#make">
+                        </div>
+                        <div>
+                            <label for="shopURL">Shop URL:</label>
+                            <input id="shopURL" name="shopURL" type="text" value="#(data.form.shopURL)" data-slug-target="output">
+                        </div>
+                        <input type="submit" value="Create Shop">
+                    </form>
+                    <div id="errors">
+                        #extend("errors")
+                    </div>
+                </div>
+            </turbo-frame>
+        </div>
+    #endexport
+#endextend

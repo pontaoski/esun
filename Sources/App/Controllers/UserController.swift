@@ -1,6 +1,38 @@
 import Fluent
 import Vapor
 
+import Foundation
+
+enum SlugConversionError: Error {
+    case failedToConvert
+}
+
+extension String {
+    private static let slugSafeCharacters = CharacterSet(charactersIn: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-")
+
+    fileprivate func doConvertSlug() -> String? {
+        guard let data = self.data(using: .ascii, allowLossyConversion: true) else {
+            return nil
+        }
+        guard let str = String(data: data, encoding: .ascii) else {
+            return nil
+        }
+
+        let urlComponents = str.lowercased().components(separatedBy: String.slugSafeCharacters.inverted)
+        return urlComponents.filter { $0 != "" }.joined(separator: "-")
+    }
+
+    public func convertedToSlug() throws -> String {
+        let result: String? = doConvertSlug()
+
+        if let result = result, result.count > 0 {
+            return result
+        }
+
+        throw SlugConversionError.failedToConvert
+    }
+}
+
 func randomString(length: Int) -> String {
     let letters = "abcdefghijklmnopqrstuvwxyz0123456789"
     return String((0..<length).map{ _ in letters.randomElement()! })
@@ -69,6 +101,54 @@ struct CreateDepositCodePage: FormPage {
             throw Abort(.forbidden)
         }
         return CreateDepositCodePage(user: me, form: Form())
+    }
+}
+
+struct CreateShopPage: FormPage {
+    static let page = "accounts/shops/create-shop"
+    static let route = PathComponent("create-shop")
+
+    struct Form: FormData {
+        var shopName: String = ""
+        var shopURL: String = ""
+        var errors: [String] = []
+    }
+    typealias Success = Self
+
+    let user: User
+    let form: Form
+
+    static func getMe(on request: Request) async throws -> User {
+        let me: User = try request.auth.require()
+        try await me.$customer.load(on: request.db)
+        guard let them: User = try await User.get(for: request.parameters.get("username")!, on: request) else {
+            throw Abort(.notFound)
+        }
+        if them.id != me.id {
+            throw Abort(.forbidden)
+        }
+        return me
+    }
+
+    static func submit(form data: Form, on request: Request) async throws -> FormPageResponse<CreateShopPage, CreateShopPage> {
+        let me = try await getMe(on: request)
+
+        let shop = Shop()
+        shop.description = ""
+        shop.title = data.shopName
+        shop.slug = try data.shopURL.convertedToSlug()
+        shop.$owner.id = me.customer.id!
+
+        if try await Shop.query(on: request.db).filter(\.$slug == data.shopURL).first() != nil {
+            return .form(CreateShopPage(user: try await getMe(on: request), form: data.error("A shop with that URL already exists")))
+        }
+
+        try await shop.create(on: request.db)
+
+        return .response(request.redirect(to: "/shops/\(shop.slug)"))
+    }
+    static func initial(on request: Request) async throws -> CreateShopPage {
+        return CreateShopPage(user: try await getMe(on: request), form: Form())
     }
 }
 
@@ -141,6 +221,7 @@ struct UserController: RouteCollection {
         }
         TransferPage.register(to: group.grouped(":username"))
         CreateDepositCodePage.register(to: group.grouped(":username"))
+        CreateShopPage.register(to: group.grouped(":username", "shops"))
     }
     struct UserpageData: Codable {
         let user: User?

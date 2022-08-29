@@ -28,8 +28,7 @@
                             </p>
                         </div>
                         <div class="flex flex-row space-x-2">
-                            <a class="button button-small">Add To Cart</a>
-                            <a class="button button-small">Buy</a>
+                            <a href="/@cart/items/add?item=#(item.id)" class="button button-small">Add To Cart</a>
                         </div>
                     </div>
                 </div>

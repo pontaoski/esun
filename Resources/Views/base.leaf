@@ -10,8 +10,8 @@
 </head>
 
 <body data-controller="folder">
-	<header class="w-full border-b border-black p-1 flex flex-row justify-between">
-		<div>
+	<header class="w-full border-b border-black p-1 flex flex-row justify-between items-center">
+		<div class="text-sm">
 			#if(app.user != nil):
 			User: #(app.user.username)
 			#else:

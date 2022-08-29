@@ -10,8 +10,10 @@ struct ShopController: RouteCollection {
             }
             struct ShopPage: Codable {
                 let shop: Shop
+                let listings: Page<ShopListing>
             }
-            return try await req.view.render("shops/shop", ShopPage(shop: shop))
+            let listings = try await ShopListing.query(on: req.db).filter(\.$shop.$id == shop.id!).with(\.$createdBy, { item in item.with(\.$user) }).paginate(for: req)
+            return try await req.view.render("shops/shop", ShopPage(shop: shop, listings: listings))
         }
     }
 }

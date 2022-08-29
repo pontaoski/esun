@@ -21,6 +21,7 @@ public func configure(_ app: Application) throws {
 
     app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
     app.databases.middleware.use(AuditLogEntry.Validator())
+    app.databases.middleware.use(ShopListing.Validator())
 
     app.middleware.use(app.sessions.middleware)
     app.middleware.use(User.sessionAuthenticator())

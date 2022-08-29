@@ -1,8 +1,39 @@
 #extend("base"):
     #export("body"):
-        <div class="grid place-items-center py-10 bg-gradient-radial-from-top from-sky-500 to-indigo-500">
-            <div class="text-2xl font-bold">
-                #(data.shop.title)
+        <div class="w-full">
+            <div class="grid place-items-center py-10 bg-gradient-radial-from-top from-sky-500 to-indigo-500">
+                <div class="text-2xl font-bold">
+                    #(data.shop.title)
+                </div>
+                #(data.shop.description)
+            </div>
+            <div class="w-full flex flex-row p-4 border-y bg-gray-100 border-gray-900 justify-between items-center">
+                <div>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div>
+                    <a class="button">Create Listing</a>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3">
+                #for(item in data.listings.items):
+                <div class="rounded border border-gray-900 bg-gray-50 p-4 m-3 space-y-4">
+                    <p>
+                        #(item.quantity) #(item.item) for #(item.diamondPrice)d #(item.ironPrice)i
+                    </p>
+                    <div class="flex flex-row justify-between items-center">
+                        <div class="flex flex-row text-xs">
+                            <p>
+                                by #customerLink(item.createdBy)
+                            </p>
+                        </div>
+                        <div class="flex flex-row space-x-2">
+                            <a class="button button-small">Add To Cart</a>
+                            <a class="button button-small">Buy</a>
+                        </div>
+                    </div>
+                </div>
+                #endfor
             </div>
         </div>
     #endexport

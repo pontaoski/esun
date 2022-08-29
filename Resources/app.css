@@ -52,6 +52,9 @@
     @apply hover:bg-teal-100;
     @apply active:bg-teal-200 shadow-none;
 }
+.button-small {
+    @apply px-2 py-1 text-sm;
+}
 input[type="text"], input[type="number"] {
     @apply focus:ring-teal-500 focus:border-teal-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300;
 }

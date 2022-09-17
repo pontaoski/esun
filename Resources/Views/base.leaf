@@ -21,11 +21,13 @@
 		<div>
 			Esun <span class="text-sm">by <span class="font-bold text-[#649832]">Solitude</span> Corporation</span>
 		</div>
-		<div>
+		<div class="flex flex-row space-x-4">
+			#if(count(app.cart.items) != 0):
 			<a href="/@cart">
 				Shopping Cart
 				(#count(app.cart.items))
 			</a>
+			#endif
 			<div data-folder-target="escape">
 			</div>
 		</div>

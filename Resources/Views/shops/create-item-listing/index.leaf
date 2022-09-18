@@ -1,0 +1,66 @@
+#extend("base"):
+    #export("body"):
+        <div class="flex flex-col items-center mt-4">
+            <div class="md:shadow w-full md:max-w-xl md:p-4 rounded">
+                <h1 class="text-xl font-bold">Create A New Listing</h1>
+
+                <form method="POST" class="flex flex-col space-y-4 mt-2">
+                    <div>
+                        <label for="itemID">Item:</label>
+                        <div data-controller="itemsel">
+                            <input id="itemID" name="itemID" type="text" value="#(data.form.itemID)" data-itemsel-target="field" autocomplete="off">
+                            <div data-itemsel-target="out" class="absolute drop-shadow">
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="quantity">Quantity (per sale)</label>
+                        <input id="quantity" name="quantity" type="text" value="#(data.form.quantity)">
+                    </div>
+                    <div>
+                        <label for="stock">Stock (how many sales)</label>
+                        <input id="stock" name="stock" type="text" value="#(data.form.stock)">
+                    </div>
+                    <div>
+                        <label for="compacted">Compacted?:</label>
+                        <input id="compacted" name="compacted" type="checkbox" value="#(data.form.compacted)">
+                    </div>
+
+                    <div data-controller="enchants">
+                        Enchants:
+                        <div data-enchants-target="out" class="py-2">
+                        #for(enchant in data.enchants):
+                        <div data-index="#(index)" data-controller="enchantsel">
+                            <div>
+                                <input data-enchantsel-target="field" type="text" name="enchants[#(index)][name]">
+                                <div class="absolute drop-shadow" data-enchantsel-target="out">
+                                <div>
+                            </div>
+                            <input data-enchantsel-target="level" type="number" name="enchants[#(index)][level]">
+                        </div>
+                        #endfor
+                        </div>
+                        <div>
+                            <button class="button" data-action="enchants#add">Add Enchant</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="diamondPrice">Diamond Price:</label>
+                        <input id="diamondPrice" name="diamondPrice" type="text" value="#(data.form.diamondPrice)">
+                    </div>
+                    <div>
+                        <label for="ironPrice">Iron Price:</label>
+                        <input id="ironPrice" name="ironPrice" type="text" value="#(data.form.ironPrice)">
+                    </div>
+
+                    <input type="submit" value="Create Listing">
+                </form>
+                <div id="errors">
+                    #extend("errors")
+                </div>
+            </div>
+        </div>
+    #endexport
+#endextend

@@ -12,7 +12,7 @@
                     <input type="text" placeholder="Search...">
                 </div>
                 <div>
-                    <a class="button">Create Listing</a>
+                    <a class="button" href="create-item-listing">Create Listing</a>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3">

@@ -10,7 +10,9 @@
     "@tailwindcss/forms": "^0.5.2",
     "@tailwindcss/typography": "^0.5.4",
     "autoprefixer": "^10.4.8",
+    "fuse.js": "^6.6.2",
     "postcss": "^8.4.16",
+    "snabbdom": "^3.5.1",
     "stimulus-vite-helpers": "^3.0.0",
     "tailwindcss": "^3.1.8",
     "vite": "^3.0.9"

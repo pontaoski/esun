@@ -3,10 +3,14 @@ import * as Turbo from "@hotwired/turbo"
 
 export default class extends Controller {
     static targets = ["stack", "escape"]
+    declare readonly hasStackTarget: boolean
     declare readonly stackTarget: HTMLElement
     declare readonly escapeTarget: HTMLElement
 
     updateEscape() {
+        if (!this.hasStackTarget)
+            return
+
         let text = this.stackTarget.lastElementChild?.previousElementSibling?.firstElementChild?.textContent
         if (text != null) {
             this.escapeTarget.textContent = `ESC: ${text}`
@@ -15,7 +19,7 @@ export default class extends Controller {
         }
     }
     handleEscapeKey(event: KeyboardEvent) {
-        event = event || window.event
+        event = event || window.event as KeyboardEvent
 
         let isEscape = false
         if ("key" in event) {

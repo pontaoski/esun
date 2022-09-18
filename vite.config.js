@@ -13,5 +13,9 @@ export default defineConfig({
 				code: "./Resources/app.js"
 			}
 		}
+	},
+	esbuild: {
+		jsxFactory: 'jsx',
+		jsxFragment: 'Fragment'
 	}
 })

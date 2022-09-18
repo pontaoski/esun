@@ -8,7 +8,7 @@ import { registerControllers } from 'stimulus-vite-helpers'
 
 Turbo.start()
 const application = Application.start()
-const controllers = import.meta.glob('./controllers/*_controller.ts', { eager: true })
+const controllers = import.meta.glob('./controllers/*_controller.*', { eager: true })
 registerControllers(application, controllers)
 
 /* */

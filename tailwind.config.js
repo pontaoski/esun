@@ -1,6 +1,7 @@
 module.exports = {
 	content: [
 		"Resources/Views/**/*.leaf",
+		"Resources/controllers/*.*",
 		"Sources/**/*.swift",
 	],
 	darkMode: 'media',

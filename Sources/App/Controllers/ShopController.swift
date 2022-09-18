@@ -21,6 +21,63 @@ struct Cart: Codable {
     }
 }
 
+struct CreateItemListingPage: FormPage {
+    static let page: String = "shops/create-item-listing"
+    static let route: PathComponent = "create-item-listing"
+
+    struct Form: FormData {
+        var itemID: String = ""
+        var stock: Int = 0
+        var enchants: [Int: ShopListing.Enchant] = [:]
+        var enchantsArray: [ShopListing.Enchant] { enchants.keys.sorted().map { enchants[$0]! }}
+        var quantity: Int = 0
+        var compacted: Bool = false
+        var diamondPrice: Int = 0
+        var ironPrice: Int = 0
+
+        var errors: [String] = []
+    }
+    typealias Success = Self
+
+    var form: Form
+    var enchants: [ShopListing.Enchant]
+
+    static func submit(form data: Form, on req: Request) async throws -> FormPageResponse<CreateItemListingPage, Success> {
+        let user: User = try req.auth.require()
+        try await user.$customer.load(on: req.db)
+
+        guard let shop = try await Shop.query(on: req.db).filter(\.$slug == req.parameters.get("shop")!).first() else {
+            throw Abort(.notFound)
+        }
+        guard shop.$owner.id == user.customer.id! else {
+            throw Abort(.forbidden)
+        }
+
+        let listing = ShopListing()
+        listing.$shop.id = shop.id!
+        listing.$createdBy.id = shop.id!
+        listing.item = data.itemID
+        listing.enchants = data.enchantsArray
+        listing.stock = data.stock
+        listing.quantity = data.quantity
+        listing.compacted = data.compacted
+        listing.diamondPrice = data.diamondPrice
+        listing.ironPrice = data.ironPrice
+
+        do {
+            try await listing.save(on: req.db)
+        } catch let error as Abort where error.status == .badRequest {
+            return .form(CreateItemListingPage(form: data.with { $0.errors = [error.reason] }, enchants: data.enchantsArray))
+        }
+
+        return .success(CreateItemListingPage(form: data, enchants: data.enchantsArray))
+    }
+
+    static func initial(on request: Request) async throws -> CreateItemListingPage {
+        return CreateItemListingPage(form: Form(), enchants: [])
+    }
+}
+
 struct ShopController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.get("@cart") { req -> View in
@@ -63,5 +120,6 @@ struct ShopController: RouteCollection {
             let listings = try await ShopListing.query(on: req.db).filter(\.$shop.$id == shop.id!).with(\.$createdBy, { item in item.with(\.$user) }).paginate(for: req)
             return try await req.view.render("shops/shop", ShopPage(shop: shop, listings: listings))
         }
+        CreateItemListingPage.register(to: routes.grouped("shops", ":shop"))
     }
 }

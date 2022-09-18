@@ -33,7 +33,7 @@ enum MCData {
     }
     struct Item: Codable {
         let name: String
-        let enchantCategories: [String]
+        let enchantCategories: [String]?
     }
 
     static var items: [Item] {
@@ -74,7 +74,7 @@ final class ShopListing: Model {
                 guard let enchantData = MCData.enchantment(named: enchant.name) else {
                     throw Abort(.badRequest, reason: "item listing enchant doesn't match known MC item enchant")
                 }
-                guard item.enchantCategories.contains(enchantData.category) else {
+                guard (item.enchantCategories ?? []).contains(enchantData.category) else {
                     throw Abort(.badRequest, reason: "item isn't enchantable")
                 }
                 guard 0 < enchant.level, enchant.level <= enchantData.maxLevel else {
@@ -88,6 +88,15 @@ final class ShopListing: Model {
             }
         }
         func validate(_ model: ShopListing) throws {
+            guard model.ironPrice >= 0 || model.diamondPrice >= 0 else {
+                throw Abort(.badRequest, reason: "listing needs a non-negative price")
+            }
+            if let stock = model.stock, stock < 0 {
+                throw Abort(.badRequest, reason: "listing can't have negative stock")
+            }
+            if let quantity = model.quantity, quantity < 0 {
+                throw Abort(.badRequest, reason: "listing can't have negative quantity")
+            }
             if model.item != nil {
                 return try validateItem(model)
             } else if model.title != nil {

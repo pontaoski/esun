@@ -55,7 +55,7 @@ struct CreateItemListingPage: FormPage {
 
         let listing = ShopListing()
         listing.$shop.id = shop.id!
-        listing.$createdBy.id = shop.id!
+        listing.$createdBy.id = user.customer.id!
         listing.item = data.itemID
         listing.enchants = data.enchantsArray
         listing.stock = data.stock

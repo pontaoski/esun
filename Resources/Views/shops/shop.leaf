@@ -12,7 +12,8 @@
                     <input type="text" placeholder="Search...">
                 </div>
                 <div>
-                    <a class="button" href="create-item-listing">Create Listing</a>
+                    <a class="button" href="create-item-listing">List an Item</a>
+                    <a class="button" href="create-other-listing">List Something Else</a>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3">

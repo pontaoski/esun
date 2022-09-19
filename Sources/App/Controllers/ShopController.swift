@@ -21,6 +21,59 @@ struct Cart: Codable {
     }
 }
 
+struct CreateOtherListingPage: FormPage {
+    static let page: String = "shops/create-other-listing"
+    static let route: PathComponent = "create-other-listing"
+
+    struct Form: FormData {
+        var title: String = ""
+        var description: String = ""
+
+        var stock: Int = 0
+        var quantity: Int = 0
+        var diamondPrice: Int = 0
+        var ironPrice: Int = 0
+
+        var errors: [String] = []
+    }
+    typealias Success = Self
+
+    var form: Form
+
+    static func submit(form data: Form, on req: Request) async throws -> FormPageResponse<CreateOtherListingPage, CreateOtherListingPage> {
+        let user: User = try req.auth.require()
+        try await user.$customer.load(on: req.db)
+
+        guard let shop = try await Shop.query(on: req.db).filter(\.$slug == req.parameters.get("shop")!).first() else {
+            throw Abort(.notFound)
+        }
+        guard shop.$owner.id == user.customer.id! else {
+            throw Abort(.forbidden)
+        }
+
+        let listing = ShopListing()
+        listing.$shop.id = shop.id!
+        listing.$createdBy.id = user.customer.id!
+        listing.title = data.title
+        listing.description = data.description
+        listing.stock = data.stock
+        listing.quantity = data.quantity
+        listing.diamondPrice = data.diamondPrice
+        listing.ironPrice = data.ironPrice
+
+        do {
+            try await listing.save(on: req.db)
+        } catch let error as Abort where error.status == .badRequest {
+            return .form(CreateOtherListingPage(form: data.with { $0.errors = [error.reason] }))
+        }
+
+        return .success(CreateOtherListingPage(form: data))
+    }
+    static func initial(on request: Request) async throws -> CreateOtherListingPage {
+        return CreateOtherListingPage(form: Form())
+    }
+}
+
 struct CreateItemListingPage: FormPage {
     static let page: String = "shops/create-item-listing"
     static let route: PathComponent = "create-item-listing"
@@ -121,5 +174,6 @@ struct ShopController: RouteCollection {
             return try await req.view.render("shops/shop", ShopPage(shop: shop, listings: listings))
         }
         CreateItemListingPage.register(to: routes.grouped("shops", ":shop"))
+        CreateOtherListingPage.register(to: routes.grouped("shops", ":shop"))
     }
 }

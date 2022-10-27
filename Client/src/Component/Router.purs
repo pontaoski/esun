@@ -4,6 +4,7 @@ import Prelude
 
 import Capability.Auth (class Auth, loginUser)
 import Capability.Navigate (class Navigate, navigate)
+import Component.Header as Header
 import Component.Utils (OpaqueSlot)
 import Data.Either (hush)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -32,6 +33,7 @@ data Action
 
 type ChildSlots =
     ( home :: OpaqueSlot Unit
+    , header :: OpaqueSlot Unit
     )
 
 component
@@ -76,11 +78,16 @@ component =
             pure (Just a)
 
     render :: State -> H.ComponentHTML Action ChildSlots m
-    render { route } = case route of
-        Just r -> case r of
-            Home ->
-                HH.slot_ (Proxy :: _ "home") unit Home.component unit
-            AuthCallback _ -> do
-                HH.div_ [ HH.text "Logging in..." ]
-        Nothing ->
-            HH.div_ [ HH.text "Page not found" ]
+    render { route } =
+        HH.div_
+            [ HH.slot_ (Proxy :: _ "header") unit Header.component unit
+            ,
+                case route of
+                    Just r -> case r of
+                        Home ->
+                            HH.slot_ (Proxy :: _ "home") unit Home.component unit
+                        AuthCallback _ -> do
+                            HH.div_ [ HH.text "Logging in..." ]
+                    Nothing ->
+                        HH.div_ [ HH.text "Page not found" ]
+            ]

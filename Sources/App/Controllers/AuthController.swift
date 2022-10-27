@@ -122,10 +122,6 @@ class AuthController: RouteCollection {
         }
     }
     func goToDiscord(req: Request) async throws -> Response {
-        if req.auth.has(User.self) {
-            return req.redirect(to: Config.instance.postLoginRedirectURL)
-        }
-
         return req.redirect(to: authURL)
     }
     private func getToken(_ req: Request, for code: String) async throws -> String {
@@ -179,10 +175,6 @@ class AuthController: RouteCollection {
         return member.nick ?? member.user.username
     }
     func callback(req: Request) async throws -> Response {
-        if req.auth.has(User.self) {
-            return req.redirect(to: Config.instance.postLoginRedirectURL)
-        }
-
         let token = try await getToken(req, for: req.query.get(String.self, at: "code"))
         let nick = try await getDiscordNick(req, token: token)
         guard let user = try await User.get(for: nick, on: req) else {
@@ -196,7 +188,7 @@ class AuthController: RouteCollection {
         let userToken = UUID.generateRandom()
         req.auth.login(user)
         try await req.redis.setex("users/\(userToken)", toJSON: userToken, expirationInSeconds: 3 * 60 * 60 * 24)
-        let resp = req.redirect(to: Config.instance.postLoginRedirectURL)
+        let resp = req.redirect(to: Config.instance.postLoginRedirectURL + "/\(userToken)")
         resp.cookies["AuthToken"] = HTTPCookies.Value(string: userToken.uuidString, isSecure: true)
         return resp
     }

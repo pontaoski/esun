@@ -5,11 +5,10 @@ import Prelude
 import Api.Request (writeToken)
 import Api.Request as Request
 import Capability.Auth (class Auth)
-import Capability.Logging (class Logging, LogLevel(..), logDebug)
+import Capability.Logging (class Logging, LogLevel(..))
 import Capability.Logging as Logging
 import Capability.Navigate (class Navigate, navigate)
 import Data.Either (Either(..))
-import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
 import Data.Route (Route(..))
 import Data.Route as Route

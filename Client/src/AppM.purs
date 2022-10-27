@@ -46,20 +46,13 @@ instance navigateAppM :: Navigate AppM where
 instance authAppM :: Auth AppM where
     loginUser token = do
         { baseUrl } <- getStore
-        logDebug "logging in..."
         Request.me baseUrl token >>= case _ of
-            Left err -> do
-                logDebug $ fold [ "failure...", err ]
-                pure Nothing
+            Left _ -> do pure Nothing
             Right profile -> do
-                logDebug "writing token..."
                 liftEffect do
                     writeToken token
-                logDebug "navigation..."
                 navigate Home
-                logDebug "updating store..."
                 updateStore $ LoginUser profile
-                logDebug "returning..."
                 pure (Just profile)
 
     logoutUser = do

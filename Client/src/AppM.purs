@@ -57,6 +57,10 @@ instance authAppM :: Auth AppM where
     logoutUser = do
         updateStore LogoutUser
 
+    getCurrentUser = do
+        { currentUser } <- getStore
+        pure currentUser
+
 instance loggingAppM :: Logging AppM where
     log msg = do
         { logLevel } <- getStore

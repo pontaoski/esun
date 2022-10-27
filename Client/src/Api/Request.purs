@@ -14,7 +14,7 @@ import Data.Codec.Argonaut.Record as CAR
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
-import Data.Profile (MyProfile, Profile)
+import Data.Profile (MyProfile)
 import Data.Profile as Profile
 import Data.Token (Token(..))
 import Data.Tuple (Tuple(..))
@@ -60,15 +60,15 @@ defaultRequest (BaseURL baseUrl) auth { endpoint, method } =
     Put b -> Tuple PUT b
     Delete -> Tuple DELETE Nothing
 
-profileResponseCodec :: JsonCodec { user :: Profile}
-profileResponseCodec =
+profileResponseCodec :: forall a. JsonCodec a -> JsonCodec { user :: a }
+profileResponseCodec inner =
     CAR.object "Profile response"
-        { user: Profile.profileCodec
+        { user: inner
         }
 
-decodeProfileResponse :: Json -> Either JsonDecodeError { user :: Profile}
-decodeProfileResponse user = do
-    Codec.decode profileResponseCodec user
+decodeProfileResponse :: forall a. JsonCodec a -> Json -> Either JsonDecodeError { user :: a }
+decodeProfileResponse inner user = do
+    Codec.decode (profileResponseCodec inner) user
 
 me :: forall m. MonadAff m => BaseURL -> Token -> m (Either String MyProfile)
 me baseUrl token = do
@@ -76,10 +76,10 @@ me baseUrl token = do
     case res of
         Left e -> pure $ Left $ printError e
         Right v -> do
-            case decodeProfileResponse v.body of
+            case decodeProfileResponse Profile.profileWithCustomerCodec v.body of
                 Left er -> pure $ Left $ printJsonDecodeError er
                 Right p ->
-                    pure $ Right $ {username: p.user.username, id: p.user.id, token: token}
+                    pure $ Right $ {username: p.user.username, id: p.user.id, customer: p.user.customer, token: token}
 
 
 tokenKey = "token" :: String

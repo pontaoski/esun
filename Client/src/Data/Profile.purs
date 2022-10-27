@@ -1,11 +1,12 @@
 module Data.Profile where
 
 import Data.Codec.Argonaut (JsonCodec)
-import Data.Codec.Argonaut as CA
 import Data.Codec.Argonaut.Record as CAR
+import Data.Customer (Customer)
+import Data.Customer as Customer
 import Data.Token (Token)
 import Data.UUID (UUID)
-import Data.UUID as UUID
+import Data.UUIDCodec as UUIDCodec
 import Data.Username (Username)
 import Data.Username as Username
 
@@ -15,15 +16,26 @@ type ProfileRep row =
     | row
     )
 
-type Profile = { | ProfileRep () }
-type MyProfile = { | ProfileRep ( token :: Token ) }
+type ProfileWithCustomerRep row =
+    ( customer :: Customer
+    | ProfileRep row
+    )
 
-uuidCodec :: JsonCodec UUID
-uuidCodec = CA.prismaticCodec "UUID" UUID.parseUUID UUID.toString CA.string
+type Profile = { | ProfileRep () }
+type ProfileWithCustomer = { | ProfileWithCustomerRep () }
+type MyProfile = { | ProfileWithCustomerRep ( token :: Token ) }
 
 profileCodec :: JsonCodec Profile
 profileCodec =
     CAR.object "Profile"
         { username: Username.codec
-        , id: uuidCodec
+        , id: UUIDCodec.codec
+        }
+
+profileWithCustomerCodec :: JsonCodec ProfileWithCustomer
+profileWithCustomerCodec =
+    CAR.object "Profile"
+        { username: Username.codec
+        , id: UUIDCodec.codec
+        , customer: Customer.codec
         }

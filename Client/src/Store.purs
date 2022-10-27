@@ -3,13 +3,9 @@ module Store where
 import Prelude
 
 import Api.Request (BaseURL)
+import Capability.Logging (LogLevel)
 import Data.Maybe (Maybe(..))
 import Data.Profile (MyProfile)
-
-data LogLevel = Dev | Prod
-
-derive instance eqLogLevel :: Eq LogLevel
-derive instance ordLogLevel :: Ord LogLevel
 
 type Store =
     { logLevel :: LogLevel

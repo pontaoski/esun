@@ -187,7 +187,7 @@ class AuthController: RouteCollection {
 
         let userToken = UUID.generateRandom()
         req.auth.login(user)
-        try await req.redis.setex("users/\(userToken)", toJSON: userToken, expirationInSeconds: 3 * 60 * 60 * 24)
+        try await req.redis.setex("users/\(userToken)", toJSON: user.id!, expirationInSeconds: 3 * 60 * 60 * 24)
         let resp = req.redirect(to: Config.instance.postLoginRedirectURL + "/\(userToken)")
         resp.cookies["AuthToken"] = HTTPCookies.Value(string: userToken.uuidString, isSecure: true)
         return resp

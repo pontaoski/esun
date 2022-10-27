@@ -41,7 +41,7 @@ func randomString(length: Int) -> String {
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let group = routes.grouped("accounts")
-        group.get("@me", use: me)
+        group.get("me", use: me)
         group.get(":username", use: account)
         group.get(":username", "audit-log", use: auditLog)
         group.get(":username", "shops", use: shops)

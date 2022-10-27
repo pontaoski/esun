@@ -25,12 +25,15 @@ struct UserAuthenticator: AsyncRequestAuthenticator {
             }
 
         let token = req.headers[.authorization]
-        if token.count > 0,
+        guard token.count > 0,
             let uuid = UUID(token[0]),
-            let user = try await User.find(uuid, on: req.db) {
-                try await user.$customer.load(on: req.db)
-                req.auth.login(user)
-            }
+            let userid = try await req.redis.get("users/\(uuid)", asJSON: UUID.self),
+            let user = try await User.find(userid, on: req.db) else {
+            return
+        }
+
+        try await user.$customer.load(on: req.db)
+        req.auth.login(user)
     }
 }
 
@@ -44,6 +47,14 @@ public func configure(_ app: Application) throws {
     app.databases.middleware.use(ShopListing.Validator())
 
     app.redis.configuration = try RedisConfiguration(hostname: "localhost")
+
+    let corsConfiguration = CORSMiddleware.Configuration(
+        allowedOrigin: .all,
+        allowedMethods: [.GET, .POST, .PUT, .OPTIONS, .DELETE, .PATCH],
+        allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent, .accessControlAllowOrigin]
+    )
+    let cors = CORSMiddleware(configuration: corsConfiguration)
+    app.middleware.use(cors, at: .beginning)
 
     app.middleware.use(app.sessions.middleware)
     app.middleware.use(UserAuthenticator())

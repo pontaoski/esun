@@ -2,15 +2,21 @@ module AppM where
 
 import Prelude
 
+import Api.Request (writeToken)
 import Api.Request as Request
 import Capability.Auth (class Auth)
-import Capability.Navigate (class Navigate)
+import Capability.Logging (class Logging, LogLevel(..), logDebug)
+import Capability.Logging as Logging
+import Capability.Navigate (class Navigate, navigate)
 import Data.Either (Either(..))
+import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
+import Data.Route (Route(..))
 import Data.Route as Route
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect, liftEffect)
+import Effect.Console as Console
 import Halogen as H
 import Halogen.Store.Monad (class MonadStore, StoreT, getStore, runStoreT, updateStore)
 import Routing.Duplex (print)
@@ -40,11 +46,28 @@ instance navigateAppM :: Navigate AppM where
 instance authAppM :: Auth AppM where
     loginUser token = do
         { baseUrl } <- getStore
+        logDebug "logging in..."
         Request.me baseUrl token >>= case _ of
-            Left _ -> pure Nothing
+            Left err -> do
+                logDebug $ fold [ "failure...", err ]
+                pure Nothing
             Right profile -> do
+                logDebug "writing token..."
+                liftEffect do
+                    writeToken token
+                logDebug "navigation..."
+                navigate Home
+                logDebug "updating store..."
                 updateStore $ LoginUser profile
+                logDebug "returning..."
                 pure (Just profile)
 
     logoutUser = do
         updateStore LogoutUser
+
+instance loggingAppM :: Logging AppM where
+    log msg = do
+        { logLevel } <- getStore
+        liftEffect case logLevel, Logging.reason msg of
+            Prod, Logging.Debug -> pure unit
+            _, _ -> Console.log $ Logging.message msg

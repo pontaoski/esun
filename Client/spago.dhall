@@ -16,10 +16,12 @@ to generate this file without the comments in this block.
   , "affjax"
   , "affjax-web"
   , "argonaut-core"
+  , "codec"
   , "codec-argonaut"
   , "console"
   , "effect"
   , "either"
+  , "foldable-traversable"
   , "halogen"
   , "halogen-store"
   , "http-methods"
@@ -32,6 +34,8 @@ to generate this file without the comments in this block.
   , "transformers"
   , "tuples"
   , "uuid"
+  , "web-html"
+  , "web-storage"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

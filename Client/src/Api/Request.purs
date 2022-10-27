@@ -9,7 +9,8 @@ import Affjax.Web (Request, printError, request)
 import Api.Endpoint (Endpoint(..), endpointCodec)
 import Data.Argonaut.Core (Json)
 import Data.Codec as Codec
-import Data.Codec.Argonaut (JsonDecodeError, printJsonDecodeError)
+import Data.Codec.Argonaut (JsonDecodeError, JsonCodec, printJsonDecodeError)
+import Data.Codec.Argonaut.Record as CAR
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
@@ -18,8 +19,12 @@ import Data.Profile as Profile
 import Data.Token (Token(..))
 import Data.Tuple (Tuple(..))
 import Data.UUID as UUID
+import Effect (Effect)
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Routing.Duplex (print)
+import Web.HTML (window)
+import Web.HTML.Window (localStorage)
+import Web.Storage.Storage (getItem, removeItem, setItem)
 
 newtype BaseURL = BaseURL String
 
@@ -40,7 +45,7 @@ defaultRequest (BaseURL baseUrl) auth { endpoint, method } =
   , url: baseUrl <> print endpointCodec endpoint
   , headers: case auth of
       Nothing -> []
-      Just (Token t) -> [ RequestHeader "Authorization" $ "Token " <> UUID.toString t ]
+      Just (Token t) -> [ RequestHeader "Authorization" $ UUID.toString t ]
   , content: RB.json <$> body
   , username: Nothing
   , password: Nothing
@@ -55,17 +60,39 @@ defaultRequest (BaseURL baseUrl) auth { endpoint, method } =
     Put b -> Tuple PUT b
     Delete -> Tuple DELETE Nothing
 
-decodeProfile :: Json -> Either JsonDecodeError Profile
-decodeProfile user = do
-    Codec.decode Profile.profileCodec user
+profileResponseCodec :: JsonCodec { user :: Profile}
+profileResponseCodec =
+    CAR.object "Profile response"
+        { user: Profile.profileCodec
+        }
+
+decodeProfileResponse :: Json -> Either JsonDecodeError { user :: Profile}
+decodeProfileResponse user = do
+    Codec.decode profileResponseCodec user
 
 me :: forall m. MonadAff m => BaseURL -> Token -> m (Either String MyProfile)
 me baseUrl token = do
-    res <- liftAff $ request $ defaultRequest baseUrl Nothing { endpoint: Me, method: Get }
+    res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: Me, method: Get }
     case res of
         Left e -> pure $ Left $ printError e
         Right v -> do
-            case decodeProfile v.body of
+            case decodeProfileResponse v.body of
                 Left er -> pure $ Left $ printJsonDecodeError er
                 Right p ->
-                    pure $ Right $ {username: p.username, id: p.id, token: token}
+                    pure $ Right $ {username: p.user.username, id: p.user.id, token: token}
+
+
+tokenKey = "token" :: String
+
+readToken :: Effect (Maybe Token)
+readToken = do
+  str <- getItem tokenKey =<< localStorage =<< window
+  pure $ map Token (str >>= UUID.parseUUID)
+
+writeToken :: Token -> Effect Unit
+writeToken (Token str) =
+  setItem tokenKey (UUID.toString str) =<< localStorage =<< window
+
+removeToken :: Effect Unit
+removeToken =
+  removeItem tokenKey =<< localStorage =<< window

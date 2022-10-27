@@ -2,6 +2,7 @@ import Fluent
 import FluentSQLiteDriver
 import Leaf
 import Vapor
+import Redis
 
 struct AlwaysTrailingSlashMiddleware: AsyncMiddleware {
     func respond(to request: Request, chainingTo next: AsyncResponder) async throws -> Response {
@@ -14,6 +15,25 @@ struct AlwaysTrailingSlashMiddleware: AsyncMiddleware {
     }
 }
 
+struct UserAuthenticator: AsyncRequestAuthenticator {
+    func authenticate(request req: Request) async throws {
+        if let token = req.cookies.all["AuthToken"],
+            let uuid = UUID(token.string),
+            let user = try await User.find(uuid, on: req.db) {
+                try await user.$customer.load(on: req.db)
+                req.auth.login(user)
+            }
+
+        let token = req.headers[.authorization]
+        if token.count > 0,
+            let uuid = UUID(token[0]),
+            let user = try await User.find(uuid, on: req.db) {
+                try await user.$customer.load(on: req.db)
+                req.auth.login(user)
+            }
+    }
+}
+
 // configures your application
 public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
@@ -23,8 +43,10 @@ public func configure(_ app: Application) throws {
     app.databases.middleware.use(AuditLogEntry.Validator())
     app.databases.middleware.use(ShopListing.Validator())
 
+    app.redis.configuration = try RedisConfiguration(hostname: "localhost")
+
     app.middleware.use(app.sessions.middleware)
-    app.middleware.use(User.sessionAuthenticator())
+    app.middleware.use(UserAuthenticator())
     app.sessions.use(.fluent)
 
     app.migrations.add(SessionRecord.migration)

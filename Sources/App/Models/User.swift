@@ -36,7 +36,7 @@ enum SiteRole: String, Codable {
     }
 }
 
-final class User: Model, ModelSessionAuthenticatable {
+final class User: Model, Authenticatable {
     static let schema = "users"
 
     @ID(key: .id)

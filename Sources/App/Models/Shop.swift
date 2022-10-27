@@ -2,7 +2,7 @@ import Foundation
 import Fluent
 import Vapor
 
-final class Shop: Model {
+final class Shop: Model, Content {
     static let schema = "shops"
 
     @ID(key: .id)
@@ -22,6 +22,15 @@ final class Shop: Model {
 
     @Field(key: "slug")
     var slug: String
+
+    init() { }
+    init(owner: Customer, title: String, description: String, slug: String) {
+        self.$owner.id = owner.id!
+        self.title = title
+        self.description = description
+        self.slug = slug
+        
+    }
 }
 
 enum MCData {

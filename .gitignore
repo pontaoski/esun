@@ -8,3 +8,4 @@ db.sqlite
 .swiftpm
 .env
 node_modules
+config.json

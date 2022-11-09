@@ -6,16 +6,21 @@ import Capability.Auth (class Auth, getCurrentUser)
 import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
 import Data.Profile (MyProfile)
+import Data.String (Pattern(..), Replacement(..))
+import Data.String as String
+import Data.UUID as UUID
 import Data.Username as Username
 import Effect.Aff.Class (class MonadAff)
+import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
+import Halogen.HTML.Properties as HP
 
 data Action
   = Initialize
 
 type State =
-    { idk :: Maybe MyProfile
+    { myUser :: Maybe MyProfile
     }
 
 component
@@ -34,15 +39,23 @@ component =
         }
     where
     initialState _ =
-        { idk: Nothing
+        { myUser: Nothing
         }
 
     render :: forall slots. State -> H.ComponentHTML Action slots m
     render state =
-        case state.idk of
+        HH.div [ HP.classes [ ClassName "folder" ] ]
+            [ HH.div [ HP.class_ $ ClassName "folder-tab "] [ HH.text "hi" ]
+            , HH.div [ HP.class_ $ ClassName "folder-body" ] [ contents ]
+            ]
+        where
+        contents = case state.myUser of
             Just me ->
                 HH.div_
-                    [ HH.p_ [ HH.text $ fold ["home page ", Username.toString me.username] ] ]
+                    [ HH.p_ [ HH.text $ fold [ "home page ", Username.toString me.username ]
+                            , HH.img [ HP.src $ "https://crafthead.net/bust/" <> (String.toLower $ String.replaceAll (Pattern "-") (Replacement "") $ UUID.toString me.id) ]
+                            ]
+                    ]
             Nothing ->
                 HH.div_
                     [ HH.p_ [ HH.text "home page"] ]
@@ -51,4 +64,4 @@ component =
     handleAction = case _ of
         Initialize -> do
             user <- getCurrentUser
-            H.modify_ _ { idk = user }
+            H.modify_ _ { myUser = user }

@@ -31,6 +31,7 @@ to generate this file without the comments in this block.
   , "routing"
   , "routing-duplex"
   , "safe-coerce"
+  , "strings"
   , "transformers"
   , "tuples"
   , "uuid"

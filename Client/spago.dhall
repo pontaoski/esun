@@ -25,6 +25,7 @@ to generate this file without the comments in this block.
   , "halogen"
   , "halogen-store"
   , "http-methods"
+  , "lists"
   , "maybe"
   , "prelude"
   , "profunctor"

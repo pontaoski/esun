@@ -45,10 +45,15 @@ component =
     render :: forall slots. State -> H.ComponentHTML Action slots m
     render state =
         HH.div [ HP.classes [ ClassName "folder" ] ]
-            [ HH.div [ HP.class_ $ ClassName "folder-tab "] [ HH.text "hi" ]
+            [ HH.div [ HP.class_ $ ClassName "folder-tab "] [ HH.text title ]
             , HH.div [ HP.class_ $ ClassName "folder-body" ] [ contents ]
             ]
         where
+        title = case state.myUser of
+            Just me ->
+                Username.toString me.username
+            Nothing ->
+                "Homepage"
         contents = case state.myUser of
             Just me ->
                 HH.div_

@@ -3,15 +3,15 @@ module Page.Home where
 import Prelude
 
 import Capability.Auth (class Auth, getCurrentUser)
-import Data.Foldable (fold)
+import Component.HTML.Utils (css, safeHref)
 import Data.Maybe (Maybe(..))
 import Data.Profile (MyProfile)
+import Data.Route (AuthRoute(..), Route(..))
 import Data.String (Pattern(..), Replacement(..))
 import Data.String as String
 import Data.UUID as UUID
 import Data.Username as Username
 import Effect.Aff.Class (class MonadAff)
-import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
@@ -44,9 +44,9 @@ component =
 
     render :: forall slots. State -> H.ComponentHTML Action slots m
     render state =
-        HH.div [ HP.classes [ ClassName "folder" ] ]
-            [ HH.div [ HP.class_ $ ClassName "folder-tab "] [ HH.text title ]
-            , HH.div [ HP.class_ $ ClassName "folder-body" ] [ contents ]
+        HH.div [ css "folder" ]
+            [ HH.div [ css "folder-tab" ] [ HH.text title ]
+            , HH.div [ css "folder-body" ] [ contents ]
             ]
         where
         title = case state.myUser of
@@ -57,8 +57,8 @@ component =
         contents = case state.myUser of
             Just me ->
                 HH.div_
-                    [ HH.p_ [ HH.text $ fold [ "home page ", Username.toString me.username ]
-                            , HH.img [ HP.src $ "https://crafthead.net/bust/" <> (String.toLower $ String.replaceAll (Pattern "-") (Replacement "") $ UUID.toString me.id) ]
+                    [ HH.p_ [ HH.img [ HP.src $ "https://crafthead.net/bust/" <> (String.toLower $ String.replaceAll (Pattern "-") (Replacement "") $ UUID.toString me.id) ]
+                            , HH.a [ safeHref $ AuthRequired CreateDepositCode, css "button" ] [ HH.text "Create a Deposit Code" ]
                             ]
                     ]
             Nothing ->

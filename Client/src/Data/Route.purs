@@ -13,10 +13,18 @@ import Routing.Duplex.Generic.Syntax ((/))
 data Route
     = Home
     | AuthCallback Token
+    | AuthRequired AuthRoute
+
+data AuthRoute 
+    = CreateDepositCode
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
 derive instance ordRoute :: Ord Route
+
+derive instance genericAuthRoute :: Generic AuthRoute _
+derive instance eqAuthRoute :: Eq AuthRoute
+derive instance ordAuthRoute :: Ord AuthRoute
 
 token :: RouteDuplex' String -> RouteDuplex' Token
 token = as print parse
@@ -29,8 +37,14 @@ token = as print parse
         parse =
             (UUID.parseUUID >>> (<$>) Token) >>> note "Bad token"
 
+authRouteCodec :: RouteDuplex' AuthRoute
+authRouteCodec = sum
+    { "CreateDepositCode": "create-deposit-code" / noArgs
+    }
+
 routeCodec :: RouteDuplex' Route
 routeCodec = root $ sum
     { "Home": noArgs
     , "AuthCallback": "auth" / "callback" / token segment
+    , "AuthRequired": authRouteCodec
     }

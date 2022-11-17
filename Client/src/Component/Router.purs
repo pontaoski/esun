@@ -4,6 +4,7 @@ import Prelude
 
 import Capability.Auth (class Auth, getCurrentUser, loginUser)
 import Capability.Navigate (class Navigate, navigate)
+import Component.HTML.Utils (css)
 import Component.Header as Header
 import Component.Utils (OpaqueSlot)
 import Data.Either (hush)
@@ -88,20 +89,23 @@ component =
         HH.div_
             [ HH.slot_ (Proxy :: _ "header") unit Header.component unit
             ,
+                HH.div [ css "folder-stack" ]
                 case route of
                     Just r -> case r of
                         Home ->
-                            HH.slot_ (Proxy :: _ "home") unit Home.component unit
+                            [ HH.slot_ (Proxy :: _ "home") unit Home.component unit ]
                         AuthCallback _ -> do
-                            HH.div_ [ HH.text "Logging in..." ]
+                            [ HH.div_ [ HH.text "Logging in..." ] ]
                         AuthRequired sub ->
                             case myUser of
                                 Just x ->
                                     case sub of
                                         CreateDepositCode ->
-                                            HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
+                                            [ HH.slot_ (Proxy :: _ "home") unit Home.component unit
+                                            , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
+                                            ]
                                 Nothing ->
-                                    HH.div_ [ HH.text "Auth required" ]
+                                    [ HH.div_ [ HH.text "Auth required" ] ]
                     Nothing ->
-                        HH.div_ [ HH.text "Page not found" ]
+                        [ HH.div_ [ HH.text "Page not found" ] ]
             ]

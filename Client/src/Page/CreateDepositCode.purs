@@ -2,6 +2,8 @@ module Page.CreateDepositCode where
 
 import Prelude
 
+import Component.HTML.Utils (css)
+import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Profile (MyProfile)
 import Halogen (ClassName(..))
@@ -41,7 +43,28 @@ component =
             ]
         where
         title = "Create Deposit Code"
-        contents = HH.div_ []
+        contents = HH.div [ css "flex", css "flex-col", css "items-center" ]
+            [ HH.div [ css "flex", css "flex-col", css "space-y-4" ]
+                [ HH.div_
+                    [ HH.label [ HP.for "ironAmount" ] [ HH.text "Iron amount:" ]
+                    , HH.input [ HP.id "ironAmount", HP.type_ HP.InputNumber, HP.min (toNumber 0) ]
+                    ]
+                , HH.div_ 
+                    [ HH.label [ HP.for "diamondAmount" ] [ HH.text "Diamond amount:" ]
+                    , HH.input [ HP.id "diamondAmount", HP.type_ HP.InputNumber, HP.min (toNumber 0) ]
+                    ]
+                , HH.input [ HP.type_ HP.InputSubmit, HP.value "Create Deposit Code" ]
+                ]
+            , HH.p [ css "max-w-lg" ]
+                [ HH.text
+                    """
+                    You can move some funds from your account into a deposit code, which will allow
+                    whoever has the code to receive the funds into their own account.
+                    If you want to give funds to a specific player directly, you should do a direct
+                    transfer.
+                    """
+                ]
+            ]
 
     handleAction = case _ of
         Initialize new -> do

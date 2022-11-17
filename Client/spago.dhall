@@ -27,6 +27,7 @@ to generate this file without the comments in this block.
   , "halogen"
   , "halogen-store"
   , "http-methods"
+  , "integers"
   , "lists"
   , "maybe"
   , "partial"

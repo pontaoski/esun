@@ -735,8 +735,26 @@ select {
   display: none;
 }
 
+.max-w-lg {
+  max-width: 32rem;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
 .justify-between {
   justify-content: space-between;
+}
+
+.space-y-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(1rem * var(--tw-space-y-reverse));
 }
 
 .border-b {
@@ -765,8 +783,20 @@ select {
   display: flex;
   flex-direction: column;
   --border-color: #A1A1AA;
-  filter: drop-shadow(0px 1px 0 var(--border-color)) drop-shadow(0px -1px 0 var(--border-color)) drop-shadow(1px 0px 0 var(--border-color)) drop-shadow(-1px 0px 0 var(--border-color));
+  filter: contrast(.8) drop-shadow(0px 1px 0 var(--border-color)) drop-shadow(0px -1px 0 var(--border-color)) drop-shadow(1px 0px 0 var(--border-color)) drop-shadow(-1px 0px 0 var(--border-color));
   grid-area: 1 / 1 / 2 / 2;
+}
+
+.folder .folder-body > * {
+  filter: blur(3px);
+}
+
+.folder:last-child {
+  filter: drop-shadow(0px 1px 0 var(--border-color)) drop-shadow(0px -1px 0 var(--border-color)) drop-shadow(1px 0px 0 var(--border-color)) drop-shadow(-1px 0px 0 var(--border-color));
+}
+
+.folder:last-child .folder-body > * {
+  filter: none;
 }
 
 .folder-tab {
@@ -800,6 +830,21 @@ select {
   min-width: 36rem;
   min-height: 24rem;
   z-index: 4;
+}
+
+.folder-stack {
+  margin: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.folder:nth-child(2) {
+  margin: 2.5rem;
+}
+
+.folder:nth-child(3) {
+  margin: 5rem;
 }
 
 .linkbutton {

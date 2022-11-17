@@ -51,8 +51,8 @@ swiftToArgonaut js = do
             inner <- Object.lookup key obj
             pure $
                 Object.empty
-                # Object.insert "key" (J.fromString key)
-                # Object.insert "data" inner
+                # Object.insert "tag" (J.fromString key)
+                # Object.insert "value" inner
                 # J.fromObject
     case ken of
         Just x -> Right x
@@ -68,10 +68,10 @@ argonautToSwift j =
     inner js = do
         obj <- toObject js
         key <- do
-            prop <- Object.lookup "key" obj
+            prop <- Object.lookup "tag" obj
             str <- J.toString prop
             pure str
-        dat <- Object.lookup "data" obj
+        dat <- Object.lookup "value" obj
         pure $
             Object.empty
             # Object.insert key dat
@@ -142,7 +142,7 @@ codec =
                 getRole :: String -> Either JsonDecodeError UUID
                 getRole role =
                     case List.find (\x -> x.role == role) rawd.involved of
-                        Just x -> Right x.customer_id
+                        Just x -> Right x.customer.id
                         Nothing -> Left MissingValue
             case rawd.data of
                 JMoneyTransfer { iron, diamonds } -> do
@@ -165,7 +165,9 @@ codec =
         raw = CAR.object "raw json"
             { data: jALE
             , involved: CAC.list $ CAR.object "involvement"
-                { customer_id: UUIDCodec.codec
+                { customer: CAR.object "customer" $
+                    { id: UUIDCodec.codec
+                    }
                 , role: CA.string
                 }
             }

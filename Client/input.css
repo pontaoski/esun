@@ -67,3 +67,12 @@
 input[type="text"], input[type="number"] {
     @apply focus:ring-teal-500 focus:border-teal-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300;
 }
+
+.error {
+    @apply px-4 py-2;
+    @apply bg-red-500/25 border-red-500;
+    @apply border-2 rounded;
+}
+.errors {
+    @apply py-4 w-full;
+}

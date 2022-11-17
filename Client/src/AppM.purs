@@ -5,11 +5,16 @@ import Prelude
 import Api.Request (writeToken)
 import Api.Request as Request
 import Capability.Auth (class Auth)
+import Capability.DepositCode (class DepositCode)
 import Capability.Logging (class Logging, LogLevel(..))
 import Capability.Logging as Logging
 import Capability.Navigate (class Navigate, navigate)
+import Control.Monad.Cont.Trans (lift)
 import Data.Either (Either(..))
+import Data.Error (Error(..), explain)
+import Data.Error as Error
 import Data.Maybe (Maybe(..))
+import Data.Profile (MyProfile)
 import Data.Route (Route(..))
 import Data.Route as Route
 import Effect.Aff (Aff)
@@ -23,6 +28,7 @@ import Routing.Hash (setHash)
 import Safe.Coerce (coerce)
 import Store (Action(..), Store)
 import Store as Store
+import Web.DOM.Node (baseURI)
 
 newtype AppM a = AppM (StoreT Store.Action Store.Store Aff a)
 
@@ -45,14 +51,16 @@ instance navigateAppM :: Navigate AppM where
 instance authAppM :: Auth AppM where
     loginUser token = do
         { baseUrl } <- getStore
-        Request.me baseUrl token >>= case _ of
-            Left _ -> do pure Nothing
-            Right profile -> do
+        res <- Request.me baseUrl token
+        case res of
+            Left _ ->
+                pure res
+            Right x -> do
                 liftEffect do
                     writeToken token
                 navigate Home
-                updateStore $ LoginUser profile
-                pure (Just profile)
+                updateStore $ LoginUser x
+                pure res
 
     logoutUser = do
         updateStore LogoutUser
@@ -67,3 +75,13 @@ instance loggingAppM :: Logging AppM where
         liftEffect case logLevel, Logging.reason msg of
             Prod, Logging.Debug -> pure unit
             _, _ -> Console.log $ Logging.message msg
+
+instance depositCodeAppM :: DepositCode AppM where
+    createDepositCode { iron, diamonds } = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.createDepositCode baseUrl me.token { iron, diamonds }
+                pure res
+            Nothing ->
+                pure $ Left $ explain "creating deposit code" Error.AuthRequired

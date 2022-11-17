@@ -7,8 +7,8 @@ import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 import Routing.Duplex (print)
 
-css :: forall r i. String -> HH.IProp (class :: String | r) i
-css = HP.class_ <<< HH.ClassName
+css :: forall r i. Array String -> HH.IProp (class :: String | r) i
+css names = HP.classes $ map HH.ClassName names
 
 safeHref :: forall r i. Route -> HH.IProp ( href :: String | r ) i
 safeHref =

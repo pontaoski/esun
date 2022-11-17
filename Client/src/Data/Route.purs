@@ -2,11 +2,11 @@ module Data.Route where
 
 import Prelude hiding ((/))
 
-import Data.Token (Token(..))
 import Data.Either (Either, note)
 import Data.Generic.Rep (class Generic)
+import Data.Token (Token(..))
 import Data.UUID as UUID
-import Routing.Duplex (RouteDuplex', root, segment, as)
+import Routing.Duplex (RouteDuplex', as, root, segment, string)
 import Routing.Duplex.Generic (noArgs, sum)
 import Routing.Duplex.Generic.Syntax ((/))
 
@@ -17,6 +17,7 @@ data Route
 
 data AuthRoute 
     = CreateDepositCode
+    | DepositCodeCreated String
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -40,6 +41,7 @@ token = as print parse
 authRouteCodec :: RouteDuplex' AuthRoute
 authRouteCodec = sum
     { "CreateDepositCode": "create-deposit-code" / noArgs
+    , "DepositCodeCreated": "deposit-code-created" / string segment
     }
 
 routeCodec :: RouteDuplex' Route

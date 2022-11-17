@@ -44,9 +44,9 @@ component =
 
     render :: forall slots. State -> H.ComponentHTML Action slots m
     render state =
-        HH.div [ css "folder" ]
-            [ HH.div [ css "folder-tab" ] [ HH.text title ]
-            , HH.div [ css "folder-body" ] [ contents ]
+        HH.div [ css ["folder"] ]
+            [ HH.div [ css ["folder-tab"] ] [ HH.text title ]
+            , HH.div [ css ["folder-body"] ] [ contents ]
             ]
         where
         title = case state.myUser of
@@ -58,7 +58,7 @@ component =
             Just me ->
                 HH.div_
                     [ HH.p_ [ HH.img [ HP.src $ "https://crafthead.net/bust/" <> (String.toLower $ String.replaceAll (Pattern "-") (Replacement "") $ UUID.toString me.id) ]
-                            , HH.a [ safeHref $ AuthRequired CreateDepositCode, css "button" ] [ HH.text "Create a Deposit Code" ]
+                            , HH.a [ safeHref $ AuthRequired CreateDepositCode, css ["button"] ] [ HH.text "Create a Deposit Code" ]
                             ]
                     ]
             Nothing ->

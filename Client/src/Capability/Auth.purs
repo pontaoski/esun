@@ -3,13 +3,15 @@ module Capability.Auth where
 import Prelude
 
 import Control.Monad.Trans.Class (lift)
+import Data.Either (Either)
+import Data.Error (Error)
 import Data.Maybe (Maybe)
 import Data.Profile (MyProfile)
 import Data.Token (Token)
 import Halogen (HalogenM)
 
 class Monad m <= Auth m where
-    loginUser :: Token -> m (Maybe MyProfile)
+    loginUser :: Token -> m (Either Error MyProfile)
     logoutUser :: m Unit
     getCurrentUser :: m (Maybe MyProfile)
 

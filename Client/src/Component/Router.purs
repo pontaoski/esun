@@ -3,6 +3,7 @@ module Component.Router where
 import Prelude
 
 import Capability.Auth (class Auth, getCurrentUser, loginUser)
+import Capability.DepositCode (class DepositCode)
 import Capability.Navigate (class Navigate, navigate)
 import Component.HTML.Utils (css)
 import Component.Header as Header
@@ -47,6 +48,7 @@ component
     => MonadStore Store.Action Store.Store m
     => Navigate m
     => Auth m
+    => DepositCode m
     => H.Component Query Unit Void m
 component =
     H.mkComponent
@@ -89,7 +91,7 @@ component =
         HH.div_
             [ HH.slot_ (Proxy :: _ "header") unit Header.component unit
             ,
-                HH.div [ css "folder-stack" ]
+                HH.div [ css ["folder-stack"] ]
                 case route of
                     Just r -> case r of
                         Home ->
@@ -103,6 +105,17 @@ component =
                                         CreateDepositCode ->
                                             [ HH.slot_ (Proxy :: _ "home") unit Home.component unit
                                             , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
+                                            ]
+                                        DepositCodeCreated code ->
+                                            [ HH.slot_ (Proxy :: _ "home") unit Home.component unit
+                                            , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
+                                            , HH.div [ css ["folder"] ]
+                                                [ HH.div [ css ["folder-tab"] ] [ HH.text "Deposit Code Successfully Created" ]
+                                                , HH.div [ css ["folder-body", "space-y-4"] ]
+                                                    [ HH.p [ css ["w-full", "text-center", "text-3xl"] ] [ HH.text code ]
+                                                    , HH.p_ [ HH.text "You can now give this deposit code to someone else." ]
+                                                    ]
+                                                ]
                                             ]
                                 Nothing ->
                                     [ HH.div_ [ HH.text "Auth required" ] ]

@@ -40,6 +40,7 @@ to generate this file without the comments in this block.
   , "transformers"
   , "tuples"
   , "uuid"
+  , "web-dom"
   , "web-html"
   , "web-storage"
   ]

@@ -12,8 +12,10 @@ import Data.AuditLogEntry (AuditLogEntry)
 import Data.AuditLogEntry as AuditLogEntry
 import Data.Codec as Codec
 import Data.Codec.Argonaut (JsonCodec, JsonDecodeError, printJsonDecodeError)
+import Data.Codec.Argonaut as CA
 import Data.Codec.Argonaut.Record as CAR
 import Data.Either (Either(..))
+import Data.Error (Error, explain)
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.Page (Page)
@@ -85,38 +87,49 @@ decodePageResponse :: forall a. JsonCodec a -> Json -> Either JsonDecodeError { 
 decodePageResponse inner user = do
     Codec.decode (pageResponseCodec inner) user
 
-me :: forall m. MonadAff m => BaseURL -> Token -> m (Either String MyProfile)
+me :: forall m. MonadAff m => BaseURL -> Token -> m (Either Error MyProfile)
 me baseUrl token = do
     res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: Me, method: Get }
     case res of
-        Left e -> pure $ Left $ printError e
+        Left e -> pure $ Left $ explain "getting my profile" e
         Right v -> do
             case decodeProfileResponse Profile.profileWithCustomerCodec v.body of
-                Left er -> pure $ Left $ printJsonDecodeError er
+                Left er -> pure $ Left $ explain "parsing my profile response" er
                 Right p ->
                     pure $ Right $ {username: p.user.username, id: p.user.id, customer: p.user.customer, token: token}
 
-account :: forall m. MonadAff m => BaseURL -> Username -> m (Either String Profile)
+account :: forall m. MonadAff m => BaseURL -> Username -> m (Either Error Profile)
 account baseUrl username = do
     res <- liftAff $ request $ defaultRequest baseUrl Nothing { endpoint: Account username, method: Get }
     case res of
-        Left e -> pure $ Left $ printError e
+        Left e -> pure $ Left $ explain "getting account" e
         Right v -> do
             case decodeProfileResponse Profile.profileCodec v.body of
-                Left er -> pure $ Left $ printJsonDecodeError er
+                Left er -> pure $ Left $ explain "parsing audit log response" er
                 Right p ->
                     pure $ Right $ {username: p.user.username, id: p.user.id}
 
-auditLog :: forall m. MonadAff m => BaseURL -> Token -> Username -> Pagination -> m (Either String (Page AuditLogEntry))
+auditLog :: forall m. MonadAff m => BaseURL -> Token -> Username -> Pagination -> m (Either Error (Page AuditLogEntry))
 auditLog baseUrl token username pages = do
     res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: AuditLog username pages, method: Get }
     case res of
-        Left e -> pure $ Left $ printError e
+        Left e -> pure $ Left $ explain "getting audit log" e
         Right v -> do
             case decodePageResponse AuditLogEntry.codec v.body of
-                Left er -> pure $ Left $ printJsonDecodeError er
+                Left er -> pure $ Left $ explain "parsing audit log response" er
                 Right p ->
                     pure $ Right p.pages
+
+createDepositCode :: forall m. MonadAff m => BaseURL -> Token -> { iron :: Int, diamonds :: Int } -> m (Either Error String)
+createDepositCode baseUrl token { iron, diamonds } = do
+    res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: CreateDepositCode, method: Post $ Just (Codec.encode (CAR.object "params" { ironAmount: CA.int, diamondAmount: CA.int }) { ironAmount: iron, diamondAmount: diamonds }) }
+    case res of
+        Left e -> pure $ Left $ explain "creating deposit code" e
+        Right v -> do
+            case Codec.decode (CAR.object "response" { code: CA.string }) v.body of
+                Left er -> pure $ Left $ explain "parsing deposit code response" er
+                Right p ->
+                    pure $ Right p.code
 
 tokenKey = "token" :: String
 

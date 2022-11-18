@@ -8,6 +8,7 @@ import Capability.Accounts (class Accounts)
 import Capability.AuditLog (class AuditLogs)
 import Capability.Auth (class Auth)
 import Capability.DepositCode (class DepositCode)
+import Capability.Funds (class Funds)
 import Capability.Logging (class Logging, LogLevel(..))
 import Capability.Logging as Logging
 import Capability.Navigate (class Navigate, navigate)
@@ -102,4 +103,14 @@ instance auditLogsAppM :: AuditLogs AppM where
                 res <- Request.auditLog baseUrl me.token username pagination
                 pure res
             Nothing ->
-                pure $ Left $ explain "creating deposit code" Error.AuthRequired
+                pure $ Left $ explain "getting audit logs" Error.AuthRequired
+
+instance fundsAppM :: Funds AppM where
+    transferMoney { iron, diamonds, to } = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.transferMoney baseUrl me.token to iron diamonds
+                pure res
+            Nothing ->
+                pure $ Left $ explain "transferring funds" Error.AuthRequired

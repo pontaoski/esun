@@ -1,26 +1,19 @@
 module Page.AuditLog where
 
-import Prelude
 import PreludeP
 
 import Api.Endpoint (Pagination)
 import Capability.AuditLog (class AuditLogs, getAuditLog)
-import Component.HTML.Utils (css, customerLink, nichts, safeHref)
+import Component.HTML.Utils (css, customerLink)
 import Data.AuditLogEntry (AuditLogEntry(..))
 import Data.AuditLogEntry as ALE
 import Data.Error as Error
 import Data.Page (Page)
-import Data.Profile (SiteRole(..))
-import Data.Route (AuthRoute(..))
-import Data.String (Pattern(..), Replacement(..))
-import Data.String as String
 import Data.Tuple (Tuple(..))
-import Data.UUID as UUID
 import Data.Username (Username)
 import Data.Username as Username
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Properties as HP
 
 type State =
     { username :: Username
@@ -63,7 +56,7 @@ component =
             ]
         where
         title = Username.toString state.username
-        contents = HH.div [ css ["flex", "flex-col", "items-center", "py-2"] ]
+        contents = HH.div [ css ["flex", "flex-col", "items-center", "py-2", "space-y-2"] ]
             case state.pages of
                 Nothing ->
                     [ HH.text "Loading..."
@@ -76,7 +69,7 @@ component =
 
         coatEntry :: forall i w. HH.HTML i w -> HH.HTML i w
         coatEntry entry =
-            HH.div [ css ["bg-white", "px-4", "py-2", "rounded", "shadow"] ]
+            HH.div [ css ["bg-white", "px-4", "py-2", "rounded", "shadow", "w-full"] ]
                 [ entry
                 ]
 

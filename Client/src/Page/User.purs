@@ -84,7 +84,7 @@ component =
                         nichts
                     , HH.div [ css ["space-y-4", "w-full" ] ]
                         [ HH.div [ css ["flex", "flex-row", "space-x-4"] ]
-                            [ HH.a [ css ["button"] ] [ HH.text "Transfer Funds" ]
+                            [ HH.a [ css ["button"], safeHref $ AuthRequired $ TransferFunds user.username ] [ HH.text "Transfer Funds" ]
                             , HH.a [ css ["button"] ] [ HH.text "Shops" ]
                             ]
                         , if Just user.id == map _.id state.myUser then
@@ -111,7 +111,6 @@ component =
                 H.modify_ _ { user = Nothing, username = username }
                 who <- getUser username
                 me <- getCurrentUser
-                log_ Debug "orwell"
                 H.modify_ _ { user = Just who, myUser = me }
             else do
                 pure unit
@@ -119,6 +118,5 @@ component =
             username <- H.gets _.username
             who <- getUser username
             me <- getCurrentUser
-            log_ Debug "orwell"
             H.modify_ _ { user = Just who, myUser = me }
 

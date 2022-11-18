@@ -23,6 +23,7 @@ data AuthRoute
     = CreateDepositCode
     | DepositCodeCreated String
     | AuditLog Username Pagination
+    | TransferFunds Username
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -55,6 +56,7 @@ authRouteCodec = sum
         { page: optional <<< int
         , per: optional <<< int
         }
+    , "TransferFunds": "accounts" / uname segment / "transfer-funds"
     }
 
 routeCodec :: RouteDuplex' Route

@@ -4,7 +4,9 @@ import Prelude
 
 import Affjax.RequestBody as RB
 import Affjax.RequestHeader (RequestHeader(..))
+import Affjax.ResponseFormat (ResponseFormat(..))
 import Affjax.ResponseFormat as RF
+import Affjax.StatusCode (StatusCode(..))
 import Affjax.Web (Request, printError, request)
 import Api.Endpoint (Endpoint(..), Pagination, endpointCodec)
 import Data.Argonaut.Core (Json)
@@ -15,7 +17,7 @@ import Data.Codec.Argonaut (JsonCodec, JsonDecodeError, printJsonDecodeError)
 import Data.Codec.Argonaut as CA
 import Data.Codec.Argonaut.Record as CAR
 import Data.Either (Either(..))
-import Data.Error (Error, explain)
+import Data.Error (Error(..), explain)
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
 import Data.Page (Page)
@@ -26,6 +28,7 @@ import Data.Token (Token(..))
 import Data.Tuple (Tuple(..))
 import Data.UUID as UUID
 import Data.Username (Username(..))
+import Data.Username as Username
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff, liftAff)
 import Routing.Duplex (print)
@@ -119,6 +122,25 @@ auditLog baseUrl token username pages = do
                 Left er -> pure $ Left $ explain "parsing audit log response" er
                 Right p ->
                     pure $ Right p.pages
+
+transferMoney :: forall m. MonadAff m => BaseURL -> Token -> Username -> Int -> Int -> m (Either Error Unit)
+transferMoney baseUrl token username iron diamonds = do
+    res <- liftAff $ request $ (defaultRequest baseUrl (Just token)
+        { endpoint: TransferMoney
+        , method: Post $ Just $ (Codec.encode
+            (CAR.object "params"
+                { ironAmount: CA.int
+                , diamondAmount: CA.int
+                , to: Username.codec
+                })
+            { ironAmount: iron, diamondAmount: diamonds, to: username })
+        }) { responseFormat = RF.ignore }
+    case res of
+        Left e -> pure $ Left $ explain "transferring funds" e
+        Right v | v.status == StatusCode 200 -> do
+            pure $ Right unit
+        Right _ ->
+            pure $ Left $ Custom "failed"
 
 createDepositCode :: forall m. MonadAff m => BaseURL -> Token -> { iron :: Int, diamonds :: Int } -> m (Either Error String)
 createDepositCode baseUrl token { iron, diamonds } = do

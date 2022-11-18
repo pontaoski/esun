@@ -6,6 +6,7 @@ import Capability.Accounts (class Accounts)
 import Capability.AuditLog (class AuditLogs)
 import Capability.Auth (class Auth, getCurrentUser, loginUser)
 import Capability.DepositCode (class DepositCode)
+import Capability.Funds (class Funds)
 import Capability.Logging (class Logging, Log(..), LogReason(..), log, log_)
 import Capability.Navigate (class Navigate, navigate)
 import Component.HTML.Utils (css)
@@ -17,6 +18,7 @@ import Data.Profile (MyProfile)
 import Data.Route (AuthRoute(..), Route(..), routeCodec)
 import Data.Token (Token)
 import Data.Tuple (Tuple(..))
+import Data.Username (Username(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen (liftEffect)
 import Halogen as H
@@ -25,6 +27,7 @@ import Halogen.Store.Monad (class MonadStore)
 import Page.AuditLog as AuditLog
 import Page.CreateDepositCode as CreateDepositCode
 import Page.Home as Home
+import Page.TransferFunds as TransferFunds
 import Page.User as User
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
@@ -48,6 +51,7 @@ type ChildSlots =
     , createDepositCode :: OpaqueSlot Unit
     , user :: OpaqueSlot Unit
     , auditLog :: OpaqueSlot Unit
+    , transferFunds :: OpaqueSlot Unit
     )
 
 component
@@ -60,6 +64,7 @@ component
     => Accounts m
     => Logging m
     => AuditLogs m
+    => Funds m
     => H.Component Query Unit Void m
 component =
     H.mkComponent
@@ -118,6 +123,10 @@ component =
                                         CreateDepositCode ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
                                             , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
+                                            ]
+                                        TransferFunds username ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component username
+                                            , HH.slot_ (Proxy :: _ "transferFunds") unit TransferFunds.component (Tuple username $ if x.username == username then Username "" else username)
                                             ]
                                         DepositCodeCreated code ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component x.username

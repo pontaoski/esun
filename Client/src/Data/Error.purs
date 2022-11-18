@@ -11,6 +11,7 @@ data Error
     | Affjax Affjax.Error
     | JsonDecodeError JsonDecodeError
     | Context String Error
+    | Custom String
 
 class Errorable m where
     toError :: m -> Error
@@ -26,6 +27,7 @@ toString error =
         Affjax x -> printError x
         JsonDecodeError x -> printJsonDecodeError x
         Context ctx x -> "while " <> ctx <> ": " <> (toString x)
+        Custom str -> str
 
 instance errorableError :: Errorable Error where
     toError self =

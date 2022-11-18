@@ -3,6 +3,7 @@ module Component.Router where
 import Prelude
 
 import Capability.Accounts (class Accounts)
+import Capability.AuditLog (class AuditLogs)
 import Capability.Auth (class Auth, getCurrentUser, loginUser)
 import Capability.DepositCode (class DepositCode)
 import Capability.Logging (class Logging, Log(..), LogReason(..), log, log_)
@@ -15,11 +16,13 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Profile (MyProfile)
 import Data.Route (AuthRoute(..), Route(..), routeCodec)
 import Data.Token (Token)
+import Data.Tuple (Tuple(..))
 import Effect.Aff.Class (class MonadAff)
 import Halogen (liftEffect)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Store.Monad (class MonadStore)
+import Page.AuditLog as AuditLog
 import Page.CreateDepositCode as CreateDepositCode
 import Page.Home as Home
 import Page.User as User
@@ -44,6 +47,7 @@ type ChildSlots =
     , header :: OpaqueSlot Unit
     , createDepositCode :: OpaqueSlot Unit
     , user :: OpaqueSlot Unit
+    , auditLog :: OpaqueSlot Unit
     )
 
 component
@@ -55,6 +59,7 @@ component
     => DepositCode m
     => Accounts m
     => Logging m
+    => AuditLogs m
     => H.Component Query Unit Void m
 component =
     H.mkComponent
@@ -124,6 +129,10 @@ component =
                                                     , HH.p_ [ HH.text "You can now give this deposit code to someone else." ]
                                                     ]
                                                 ]
+                                            ]
+                                        AuditLog username pagination ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component username
+                                            , HH.slot_ (Proxy :: _ "auditLog") unit AuditLog.component (Tuple username pagination)
                                             ]
                                 Nothing ->
                                     [ HH.div_ [ HH.text "Auth required" ] ]

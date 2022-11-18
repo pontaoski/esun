@@ -2,16 +2,16 @@ module Data.Route where
 
 import Prelude hiding ((/))
 
-import Api.Endpoint (uname)
+import Api.Endpoint (Pagination, uname)
 import Data.Either (Either, note)
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 import Data.Token (Token(..))
 import Data.UUID as UUID
 import Data.Username (Username)
-import Routing.Duplex (RouteDuplex', as, root, segment, string)
+import Routing.Duplex (RouteDuplex', as, int, optional, root, segment, string)
 import Routing.Duplex.Generic (noArgs, sum)
-import Routing.Duplex.Generic.Syntax ((/))
+import Routing.Duplex.Generic.Syntax ((/), (?))
 
 data Route
     = Home
@@ -22,6 +22,7 @@ data Route
 data AuthRoute 
     = CreateDepositCode
     | DepositCodeCreated String
+    | AuditLog Username Pagination
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -50,6 +51,10 @@ authRouteCodec :: RouteDuplex' AuthRoute
 authRouteCodec = sum
     { "CreateDepositCode": "create-deposit-code" / noArgs
     , "DepositCodeCreated": "deposit-code-created" / string segment
+    , "AuditLog": "accounts" / uname segment / "audit-log" ?
+        { page: optional <<< int
+        , per: optional <<< int
+        }
     }
 
 routeCodec :: RouteDuplex' Route

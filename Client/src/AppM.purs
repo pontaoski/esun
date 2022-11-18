@@ -5,6 +5,7 @@ import Prelude
 import Api.Request (writeToken)
 import Api.Request as Request
 import Capability.Accounts (class Accounts)
+import Capability.AuditLog (class AuditLogs)
 import Capability.Auth (class Auth)
 import Capability.DepositCode (class DepositCode)
 import Capability.Logging (class Logging, LogLevel(..))
@@ -89,6 +90,16 @@ instance depositCodeAppM :: DepositCode AppM where
         case currentUser of
             Just me -> do
                 res <- Request.createDepositCode baseUrl me.token { iron, diamonds }
+                pure res
+            Nothing ->
+                pure $ Left $ explain "creating deposit code" Error.AuthRequired
+
+instance auditLogsAppM :: AuditLogs AppM where
+    getAuditLog pagination username = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.auditLog baseUrl me.token username pagination
                 pure res
             Nothing ->
                 pure $ Left $ explain "creating deposit code" Error.AuthRequired

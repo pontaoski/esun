@@ -1,5 +1,6 @@
 module Data.AuditLogEntry
-  ( AuditLogEntry(..)
+  ( AuditLogCustomer
+  , AuditLogEntry(..)
   , codec
   , swiftToArgonaut
   )
@@ -11,7 +12,7 @@ import Data.Argonaut.Core (toObject)
 import Data.Argonaut.Core as J
 import Data.Array as Array
 import Data.Codec as C
-import Data.Codec.Argonaut (JsonDecodeError(..), (<~<))
+import Data.Codec.Argonaut (JsonDecodeError(..), JsonCodec, (<~<))
 import Data.Codec.Argonaut as CA
 import Data.Codec.Argonaut as Codec
 import Data.Codec.Argonaut.Common (JsonCodec)
@@ -24,13 +25,22 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.UUID (UUID)
 import Data.UUIDCodec as UUIDCodec
+import Data.Username (Username(..))
+import Data.Username as Username
 import Foreign.Object as Object
 import Partial.Unsafe (unsafeCrashWith)
 
+type AuditLogCustomer =
+    { id :: UUID
+    , user ::
+        { username :: Username
+        }
+    }
+
 data AuditLogEntry
-    = MoneyTransfer { iron :: Int, diamonds :: Int, from :: UUID, to :: UUID }
-    | BalanceAdjustment { iron :: Int, diamonds :: Int, target :: UUID, teller :: UUID }
-    | CreateDepositCode { code :: String, iron :: Int, diamonds :: Int, creator :: UUID }
+    = MoneyTransfer { iron :: Int, diamonds :: Int, from :: AuditLogCustomer, to :: AuditLogCustomer }
+    | BalanceAdjustment { iron :: Int, diamonds :: Int, target :: AuditLogCustomer, teller :: AuditLogCustomer }
+    | CreateDepositCode { code :: String, iron :: Int, diamonds :: Int, creator :: AuditLogCustomer }
 
 data JSONAuditLogEntry
     = JMoneyTransfer { iron :: Int, diamonds :: Int }
@@ -139,10 +149,10 @@ codec =
         dec js = do
             rawd <- CA.decode raw js
             let
-                getRole :: String -> Either JsonDecodeError UUID
+                getRole :: String -> Either JsonDecodeError AuditLogCustomer
                 getRole role =
                     case List.find (\x -> x.role == role) rawd.involved of
-                        Just x -> Right x.customer.id
+                        Just x -> Right x.customer
                         Nothing -> Left MissingValue
             case rawd.data of
                 JMoneyTransfer { iron, diamonds } -> do
@@ -165,9 +175,16 @@ codec =
         raw = CAR.object "raw json"
             { data: jALE
             , involved: CAC.list $ CAR.object "involvement"
-                { customer: CAR.object "customer" $
-                    { id: UUIDCodec.codec
-                    }
+                { customer: customerCodec
                 , role: CA.string
                 }
             }
+
+        customerCodec :: JsonCodec AuditLogCustomer
+        customerCodec =
+            CAR.object "customer"
+                { id: UUIDCodec.codec
+                , user: CAR.object "customer user"
+                    { username: Username.codec
+                    }
+                }

@@ -11,6 +11,7 @@ newtype Username = Username String
 
 derive instance eqUsername :: Eq Username
 derive instance ordUsername :: Ord Username
+derive newtype instance showUsername :: Show Username
 
 codec :: JsonCodec Username
 codec = (dimap toString) Username CA.string

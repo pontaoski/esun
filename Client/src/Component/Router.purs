@@ -2,8 +2,10 @@ module Component.Router where
 
 import Prelude
 
+import Capability.Accounts (class Accounts)
 import Capability.Auth (class Auth, getCurrentUser, loginUser)
 import Capability.DepositCode (class DepositCode)
+import Capability.Logging (class Logging, Log(..), LogReason(..), log, log_)
 import Capability.Navigate (class Navigate, navigate)
 import Component.HTML.Utils (css)
 import Component.Header as Header
@@ -20,6 +22,7 @@ import Halogen.HTML as HH
 import Halogen.Store.Monad (class MonadStore)
 import Page.CreateDepositCode as CreateDepositCode
 import Page.Home as Home
+import Page.User as User
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 import Store as Store
@@ -40,6 +43,7 @@ type ChildSlots =
     ( home :: OpaqueSlot Unit
     , header :: OpaqueSlot Unit
     , createDepositCode :: OpaqueSlot Unit
+    , user :: OpaqueSlot Unit
     )
 
 component
@@ -49,6 +53,8 @@ component
     => Navigate m
     => Auth m
     => DepositCode m
+    => Accounts m
+    => Logging m
     => H.Component Query Unit Void m
 component =
     H.mkComponent
@@ -96,6 +102,8 @@ component =
                     Just r -> case r of
                         Home ->
                             [ HH.slot_ (Proxy :: _ "home") unit Home.component unit ]
+                        User who ->
+                            [ HH.slot_ (Proxy :: _ "user") unit User.component who ]
                         AuthCallback _ -> do
                             [ HH.div_ [ HH.text "Logging in..." ] ]
                         AuthRequired sub ->
@@ -103,11 +111,11 @@ component =
                                 Just x ->
                                     case sub of
                                         CreateDepositCode ->
-                                            [ HH.slot_ (Proxy :: _ "home") unit Home.component unit
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
                                             , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
                                             ]
                                         DepositCodeCreated code ->
-                                            [ HH.slot_ (Proxy :: _ "home") unit Home.component unit
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
                                             , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
                                             , HH.div [ css ["folder"] ]
                                                 [ HH.div [ css ["folder-tab"] ] [ HH.text "Deposit Code Successfully Created" ]

@@ -16,11 +16,8 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
 
-data Action
-  = Initialize
-
 type State =
-    { myUser :: Maybe MyProfile
+    {
     }
 
 component
@@ -32,41 +29,19 @@ component =
     H.mkComponent
         { initialState
         , render
-        , eval: H.mkEval $ H.defaultEval
-            { handleAction = handleAction
-            , initialize = Just Initialize
-            }
+        , eval: H.mkEval H.defaultEval
         }
     where
     initialState _ =
-        { myUser: Nothing
+        {
         }
 
-    render :: forall slots. State -> H.ComponentHTML Action slots m
+    render :: forall action slots. State -> H.ComponentHTML action slots m
     render state =
         HH.div [ css ["folder"] ]
             [ HH.div [ css ["folder-tab"] ] [ HH.text title ]
             , HH.div [ css ["folder-body"] ] [ contents ]
             ]
         where
-        title = case state.myUser of
-            Just me ->
-                Username.toString me.username
-            Nothing ->
-                "Homepage"
-        contents = case state.myUser of
-            Just me ->
-                HH.div_
-                    [ HH.p_ [ HH.img [ HP.src $ "https://crafthead.net/bust/" <> (String.toLower $ String.replaceAll (Pattern "-") (Replacement "") $ UUID.toString me.id) ]
-                            , HH.a [ safeHref $ AuthRequired CreateDepositCode, css ["button"] ] [ HH.text "Create a Deposit Code" ]
-                            ]
-                    ]
-            Nothing ->
-                HH.div_
-                    [ HH.p_ [ HH.text "home page"] ]
-
-    handleAction :: forall slots. Action -> H.HalogenM State Action slots o m Unit
-    handleAction = case _ of
-        Initialize -> do
-            user <- getCurrentUser
-            H.modify_ _ { myUser = user }
+        title = "Welcome to Esun"
+        contents = HH.p_ [ HH.text "home page"]

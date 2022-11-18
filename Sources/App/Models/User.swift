@@ -65,9 +65,15 @@ final class User: Model, Authenticatable {
         if let customer = self.$customer.value {
             try container.encode(customer, forKey: .customer)
         }
-        try container.encode(self.role, forKey: .role)
-        try container.encode(self.teller, forKey: .teller)
-        try container.encode(self.admin, forKey: .admin)
+        if let role = self.$role.value {
+            try container.encode(self.role, forKey: .role)
+            try container.encode(self.teller, forKey: .teller)
+            try container.encode(self.admin, forKey: .admin)
+        } else {
+            try container.encode(SiteRole.user, forKey: .role)
+            try container.encode(false, forKey: .teller)
+            try container.encode(false, forKey: .admin)
+        }
     }
 
     enum WriteCodingKeys: String, CodingKey {

@@ -4,6 +4,7 @@ import Prelude
 
 import Api.Request (writeToken)
 import Api.Request as Request
+import Capability.Accounts (class Accounts)
 import Capability.Auth (class Auth)
 import Capability.DepositCode (class DepositCode)
 import Capability.Logging (class Logging, LogLevel(..))
@@ -47,6 +48,12 @@ derive newtype instance monadStoreAppM :: MonadStore Action Store AppM
 instance navigateAppM :: Navigate AppM where
     navigate =
         liftEffect <<< setHash <<< print Route.routeCodec
+
+instance accountsAppM :: Accounts AppM where
+    getUser who = do
+        { baseUrl } <- getStore
+        res <- Request.account baseUrl who
+        pure res
 
 instance authAppM :: Auth AppM where
     loginUser token = do

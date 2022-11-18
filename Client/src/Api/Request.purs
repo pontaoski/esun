@@ -96,7 +96,7 @@ me baseUrl token = do
             case decodeProfileResponse Profile.profileWithCustomerCodec v.body of
                 Left er -> pure $ Left $ explain "parsing my profile response" er
                 Right p ->
-                    pure $ Right $ {username: p.user.username, id: p.user.id, customer: p.user.customer, token: token}
+                    pure $ Right $ {username: p.user.username, id: p.user.id, customer: p.user.customer, created: p.user.created, role: p.user.role, token: token}
 
 account :: forall m. MonadAff m => BaseURL -> Username -> m (Either Error Profile)
 account baseUrl username = do
@@ -107,7 +107,7 @@ account baseUrl username = do
             case decodeProfileResponse Profile.profileCodec v.body of
                 Left er -> pure $ Left $ explain "parsing audit log response" er
                 Right p ->
-                    pure $ Right $ {username: p.user.username, id: p.user.id}
+                    pure $ Right $ {username: p.user.username, created: p.user.created, role: p.user.role, id: p.user.id}
 
 auditLog :: forall m. MonadAff m => BaseURL -> Token -> Username -> Pagination -> m (Either Error (Page AuditLogEntry))
 auditLog baseUrl token username pages = do

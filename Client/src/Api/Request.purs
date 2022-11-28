@@ -142,6 +142,10 @@ transferMoney baseUrl token username iron diamonds = do
         Right _ ->
             pure $ Left $ Custom "failed"
 
+currencyAmount :: { iron :: Int, diamonds :: Int } -> Json
+currencyAmount { iron, diamonds } =
+    Codec.encode (CAR.object "params" { ironAmount: CA.int, diamondAmount: CA.int }) { ironAmount: iron, diamondAmount: diamonds }
+
 createDepositCode :: forall m. MonadAff m => BaseURL -> Token -> { iron :: Int, diamonds :: Int } -> m (Either Error String)
 createDepositCode baseUrl token { iron, diamonds } = do
     res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: CreateDepositCode, method: Post $ Just (Codec.encode (CAR.object "params" { ironAmount: CA.int, diamondAmount: CA.int }) { ironAmount: iron, diamondAmount: diamonds }) }
@@ -152,6 +156,18 @@ createDepositCode baseUrl token { iron, diamonds } = do
                 Left er -> pure $ Left $ explain "parsing deposit code response" er
                 Right p ->
                     pure $ Right p.code
+
+adjustBalance :: forall m. MonadAff m => BaseURL -> Token -> Username -> { iron :: Int, diamonds :: Int } -> m (Either Error Unit)
+adjustBalance baseUrl token target { iron, diamonds } = do
+    res <- liftAff $ request $
+        (defaultRequest baseUrl (Just token) { endpoint: TellerAdjustBalance target, method: Post $ Just $ currencyAmount { iron, diamonds } })
+        { responseFormat = RF.ignore }
+    case res of
+        Left e -> pure $ Left $ explain "adjusting balance" e
+        Right v | v.status == StatusCode 200 -> do
+            pure $ Right unit
+        Right _ ->
+            pure $ Left $ Custom "failed"
 
 tokenKey = "token" :: String
 

@@ -3,7 +3,7 @@ module Page.TransferFunds where
 import Prelude
 
 import Capability.Funds (class Funds, transferMoney)
-import Component.HTML.Utils (css)
+import Component.HTML.Utils (conditional, css)
 import Data.Either (Either(..))
 import Data.Error (Error)
 import Data.Error as Error
@@ -21,6 +21,7 @@ import Halogen.HTML.Properties as HP
 
 type State =
     { requestUsername :: Username
+    , requestToWho :: Username
     , toWho :: Username
     , iron :: Int
     , diamond :: Int
@@ -51,7 +52,7 @@ component =
     where
     initialState :: (Tuple Username Username) -> State
     initialState (Tuple requestUsername toWho) =
-        { requestUsername, toWho, iron: 0, diamond: 0, error: Nothing }
+        { requestUsername, requestToWho: toWho, toWho, iron: 0, diamond: 0, error: Nothing }
 
     render :: State -> H.ComponentHTML Action () m
     render state =
@@ -63,8 +64,8 @@ component =
         title = "Transfer Funds"
         contents = HH.div [ css ["flex", "flex-col", "items-center"] ]
             [ HH.div [ css ["flex", "flex-col", "space-y-4"] ]
-                [ HH.div_
-                    [ HH.label [ HP.for "username" ] [ HH.text "Send funds to::" ]
+                [ conditional (state.requestToWho == (Username "")) $ HH.div_
+                    [ HH.label [ HP.for "username" ] [ HH.text "Send funds to:" ]
                     , HH.input [ HP.id "username", HP.type_ HP.InputText, HE.onValueInput $ \x -> ToWho (Username x)  ]
                     ]
                 , HH.div_
@@ -75,7 +76,7 @@ component =
                     [ HH.label [ HP.for "diamondAmount" ] [ HH.text "Diamond amount:" ]
                     , HH.input [ HP.id "diamondAmount", HP.type_ HP.InputNumber, HP.min (toNumber 0), HE.onValueInput Diamond ]
                     ]
-                , HH.input [ HP.type_ HP.InputSubmit, HP.value "Create Deposit Code", HE.onClick $ \_ -> Submit ]
+                , HH.input [ HP.type_ HP.InputSubmit, HP.value "Transfer Funds", HE.onClick $ \_ -> Submit ]
                 ]
             , case state.error of
                 Just (Left err) ->
@@ -89,7 +90,7 @@ component =
     handleAction :: Action -> H.HalogenM State Action () o m Unit
     handleAction = case _ of
         Receive (Tuple requested toWho) -> do
-            H.modify_ _ { requestUsername = requested, toWho = toWho }
+            H.modify_ _ { requestUsername = requested, requestToWho = toWho }
         ToWho new -> do
             H.modify_ _ { toWho = new }
         Iron new -> do

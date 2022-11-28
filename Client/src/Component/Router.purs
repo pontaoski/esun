@@ -12,6 +12,7 @@ import Capability.Navigate (class Navigate, navigate)
 import Component.HTML.Utils (css)
 import Component.Header as Header
 import Component.Utils (OpaqueSlot)
+import Debug as Debug
 import Data.Either (hush)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Profile (MyProfile)

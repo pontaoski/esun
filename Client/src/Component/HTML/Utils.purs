@@ -27,3 +27,10 @@ customerLink rec =
 safeHref :: forall r i. Route -> HH.IProp ( href :: String | r ) i
 safeHref =
     HP.href <<< append "#" <<< print routeCodec
+
+conditional :: forall i w. Boolean -> HH.HTML i w -> HH.HTML i w
+conditional cond html =
+    if cond then
+        html
+    else
+        HH.text ""

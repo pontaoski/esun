@@ -29,6 +29,7 @@ import Page.AuditLog as AuditLog
 import Page.CreateDepositCode as CreateDepositCode
 import Page.Home as Home
 import Page.TransferFunds as TransferFunds
+import Page.AdjustBalance as AdjustBalance
 import Page.User as User
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
@@ -53,6 +54,7 @@ type ChildSlots =
     , user :: OpaqueSlot Unit
     , auditLog :: OpaqueSlot Unit
     , transferFunds :: OpaqueSlot Unit
+    , adjustBalance :: OpaqueSlot Unit
     )
 
 component
@@ -128,6 +130,10 @@ component =
                                         TransferFunds username ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component username
                                             , HH.slot_ (Proxy :: _ "transferFunds") unit TransferFunds.component (Tuple username $ if x.username == username then Username "" else username)
+                                            ]
+                                        AdjustBalance username ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component username
+                                            , HH.slot_ (Proxy :: _ "adjustBalance") unit AdjustBalance.component (Tuple username $ if x.username == username then Username "" else username)
                                             ]
                                         DepositCodeCreated code ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component x.username

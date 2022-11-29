@@ -91,7 +91,6 @@ component =
                         , customerLink target
                         , HH.text $ "'s balance by " <> (show iron) <> "i"
                                              <> (show diamonds) <> "d"
-                                             <> " to "
                         ]
                 ALE.CreateDepositCode { code, iron, diamonds, creator } ->
                     HH.span_

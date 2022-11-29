@@ -96,7 +96,7 @@ component =
                             nichts
                         , if (map (\x -> x >= Teller) (map _.role state.myUser)) == Just true then
                             HH.div [ css ["flex", "flex-row", "space-x-4"] ]
-                                [ HH.a [ css ["button"] ] [ HH.text "Adjust Balance" ]
+                                [ HH.a [ css ["button"], safeHref $ AuthRequired $ AdjustBalance user.username ] [ HH.text "Adjust Balance" ]
                                 ]
                         else
                             nichts

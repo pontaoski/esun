@@ -53,7 +53,7 @@ endpointCodec = root $ sum
         }
     , "TransferMoney": "accounts" / "transfer-money" / noArgs
     , "CreateDepositCode": "accounts" / "create-deposit-code" / noArgs
-    , "TellerAdjustBalance": "accounts" / uname segment / "teller/adjust-balance"
+    , "TellerAdjustBalance": ("accounts" / uname segment / "teller") / "adjust-balance"
     , "Shop": "shops" / sname segment
     , "CreateShop": "shops" / "create" / noArgs
     , "Items": "shops" / sname segment / "items" ?

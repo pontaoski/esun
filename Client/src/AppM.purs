@@ -17,7 +17,7 @@ import Data.Either (Either(..))
 import Data.Error (Error(..), explain)
 import Data.Error as Error
 import Data.Maybe (Maybe(..))
-import Data.Profile (MyProfile)
+import Data.Profile (MyProfile, SiteRole(..))
 import Data.Route (Route(..))
 import Data.Route as Route
 import Effect.Aff (Aff)
@@ -114,3 +114,14 @@ instance fundsAppM :: Funds AppM where
                 pure res
             Nothing ->
                 pure $ Left $ explain "transferring funds" Error.AuthRequired
+
+    adjustBalance { iron, diamonds, target } = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me | me.role >= Teller -> do
+                res <- Request.adjustBalance baseUrl me.token target { iron, diamonds }
+                pure res
+            Just _ -> do
+                pure $ Left $ explain "adjusting balance" Error.AuthRequired
+            Nothing ->
+                pure $ Left $ explain "adjusting balance" Error.AuthRequired

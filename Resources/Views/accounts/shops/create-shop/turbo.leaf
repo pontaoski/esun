@@ -1,0 +1,7 @@
+<turbo-stream action="replace" target="errors">
+    <template>
+        <div id="errors">
+            #extend("errors")
+        </div>
+    </template>
+</turbo-stream>

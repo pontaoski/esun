@@ -45,12 +45,18 @@
     min-height: 24rem;
     z-index: 4;
 }
+.linkbutton {
+    @apply text-sky-400 hover:text-sky-500 active:text-sky-600 underline;
+}
 .button, input[type="submit"] {
     @apply px-4 py-2;
     @apply rounded shadow;
-    @apply bg-teal-50 border-2 border-teal-500;
-    @apply hover:bg-teal-100;
-    @apply active:bg-teal-200 shadow-none;
+    @apply bg-slate-200;
+    @apply hover:bg-slate-300;
+    @apply active:bg-slate-400 shadow-none;
+}
+.button-small {
+    @apply px-2 py-1 text-sm;
 }
 input[type="text"], input[type="number"] {
     @apply focus:ring-teal-500 focus:border-teal-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300;

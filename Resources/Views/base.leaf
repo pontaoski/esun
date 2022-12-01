@@ -7,27 +7,39 @@
 	<script type="module" src="http://localhost:5173/@vite/client"></script>
 	<script type="module" src="http://localhost:5173/Public/app.ts"></script>
 	#endif
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700&display=swap" rel="stylesheet"> 
 </head>
 
-<body data-controller="folder">
-	<header class="w-full border-b border-black p-1 flex flex-row justify-between">
+<body data-controller="folder" class="font-inter">
+	<header class="w-full p-2 flex flex-row justify-between items-center">
 		<div>
+			Esun <span class="text-sm">by <span class="font-bold text-[#649832]">Solitude</span> Corporation</span>
+		</div>
+		<div class="flex flex-row space-x-2">
+			#if(count(app.cart.items) != 0):
+			<a href="/@cart">
+				<span>Shopping Cart</span>
+				<span class="bg-sky-400 text-white h-6 px-2 text-center rounded-full aspect-square">#count(app.cart.items)</span>
+			</a>
+			#endif
+
 			#if(app.user != nil):
-			User: #(app.user.username)
+			<img class="h-6 inline pr-1" src="https://crafthead.net/cube/#uuidCorrection(app.user.id)">
+			#(app.user.username)
 			#else:
 			<a href="/auth/login">Log In</a>
 			#endif
-		</div>
-		<div>
-			Esun Bank
-		</div>
-		<div data-folder-target="escape">
-			ESC: Orwell
 		</div>
 	</header>
 	<main>
 		#import("body")
 	</main>
+	<footer class="absolute right-0 bottom-0 p-2">
+		<div data-folder-target="escape">
+		</div>
+	</footer>
 </body>
 
 </html>

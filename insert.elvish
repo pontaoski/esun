@@ -1,0 +1,4 @@
+for i [(range 1 10)] {
+    var uuid = (uuidgen | head -c -1 | tr "[:lower:]" "[:upper:]")
+    echo INSERT INTO "main"."shop_listings" '("id", "shop_id", "created_by")' VALUES "('"$uuid"', 'FB9FB884-4318-42C1-90E1-5C61F8DA8F09', 'D1B210CE-7093-453F-99A8-CBDF3FA5AFFD')" | sqlite3 db.sqlite
+}

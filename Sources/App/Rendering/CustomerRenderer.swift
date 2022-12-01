@@ -12,7 +12,7 @@ struct CustomerRenderer: UnsafeUnescapedLeafTag {
             }
             return .string(
                 #"""
-                <a href="/accounts/\#(username)/" class="underline text-teal-700 inline-flex items-baseline space-x-1">
+                <a href="/accounts/\#(username)/" class="linkbutton inline-flex items-baseline space-x-1">
                     <img src="https://crafthead.net/avatar/\#(username)" class="self-center inline aspect-square h-5">
                     <span>\#(username)</span>
                 </a>

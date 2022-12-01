@@ -13,11 +13,13 @@ extension Application.Views.Provider {
 
 struct AppData: Codable {
     var user: User?
+    var cart: Cart
     var environment: String
 
     internal init(from req: Request) async throws {
         self.user = req.auth.get()
         try await self.user?.$customer.load(on: req.db)
+        self.cart = Cart.for(req)
         self.environment = req.application.environment.name
     }
 }

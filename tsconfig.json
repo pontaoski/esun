@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "jsx": "react",
+        "jsxFactory": "jsx",
+        "jsxFragmentFactory": "Fragment",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "module": "ES2020",
+        "lib": ["ES2015", "DOM"],
+        "moduleResolution": "Node"
+    }
+}

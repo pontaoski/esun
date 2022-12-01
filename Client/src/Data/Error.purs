@@ -8,6 +8,7 @@ import Data.Codec.Argonaut (JsonDecodeError, printJsonDecodeError)
 
 data Error
     = AuthRequired
+    | NotImplemented String
     | Affjax Affjax.Error
     | JsonDecodeError JsonDecodeError
     | Context String Error
@@ -24,6 +25,7 @@ toString :: forall m. Errorable m => m -> String
 toString error =
     case toError error of
         AuthRequired -> "authenticaiton is required"
+        NotImplemented x -> x <> " is not implemented"
         Affjax x -> printError x
         JsonDecodeError x -> printJsonDecodeError x
         Context ctx x -> "while " <> ctx <> ": " <> (toString x)

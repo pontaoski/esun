@@ -9,11 +9,17 @@ final class AuditLogEntry: Model {
         case moneyTransfer
         case balanceAdjustment
         case createDepositCode
+        case createWithdrawalCode
+        case useDepositCode
+        case useWithdrawalCode
     }
     enum Data: Codable {
         case moneyTransfer(iron: Int, diamonds: Int)
         case balanceAdjustment(iron: Int, diamonds: Int)
         case createDepositCode(code: String, iron: Int, diamonds: Int)
+        case createWithdrawalCode(code: String, iron: Int, diamonds: Int)
+        case useDepositCode(code: String, iron: Int, diamonds: Int)
+        case useWithdrawalCode(code: String, iron: Int, diamonds: Int)
     }
     struct Validator: AsyncModelMiddleware {
         func create(model: AuditLogEntry, on db: Database, next: AnyAsyncModelResponder) async throws {
@@ -38,6 +44,18 @@ final class AuditLogEntry: Model {
                 }
             case .createDepositCode:
                 guard case .createDepositCode = decoded else {
+                    throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
+                }
+            case .createWithdrawalCode:
+                guard case .createWithdrawalCode = decoded else {
+                    throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
+                }
+            case .useDepositCode:
+                guard case .useDepositCode = decoded else {
+                    throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
+                }
+            case .useWithdrawalCode:
+                guard case .useWithdrawalCode = decoded else {
                     throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
                 }
             }
@@ -88,6 +106,55 @@ final class AuditLogEntry: Model {
         let entry = AuditLogEntry()
         entry.kind = .createDepositCode
         entry.data = try JSONValue.decode(JSONEncoder().encode(Data.createDepositCode(code: code, iron: iron, diamonds: diamonds)))
+
+        try await entry.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = by.id!
+        involvement2.$entry.id = entry.id!
+        involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
+    }
+
+    /// assumes database is in a transaction
+    static func logCreateWithdrawalCode(by: Customer, code: String, iron: Int, diamonds: Int, on db: Database) async throws {
+        let entry = AuditLogEntry()
+        entry.kind = .createWithdrawalCode
+        entry.data = try JSONValue.decode(JSONEncoder().encode(Data.createWithdrawalCode(code: code, iron: iron, diamonds: diamonds)))
+
+        try await entry.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = by.id!
+        involvement2.$entry.id = entry.id!
+        involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
+    }
+
+
+    /// assumes database is in a transaction
+    static func logUseWithdrawalCode(by: Customer, code: String, iron: Int, diamonds: Int, on db: Database) async throws {
+        let entry = AuditLogEntry()
+        entry.kind = .useWithdrawalCode
+        entry.data = try JSONValue.decode(JSONEncoder().encode(Data.useWithdrawalCode(code: code, iron: iron, diamonds: diamonds)))
+
+        try await entry.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = by.id!
+        involvement2.$entry.id = entry.id!
+        involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
+    }
+
+    /// assumes database is in a transaction
+    static func logUseDepositCode(by: Customer, code: String, iron: Int, diamonds: Int, on db: Database) async throws {
+        let entry = AuditLogEntry()
+        entry.kind = .useDepositCode
+        entry.data = try JSONValue.decode(JSONEncoder().encode(Data.useDepositCode(code: code, iron: iron, diamonds: diamonds)))
 
         try await entry.save(on: db)
 

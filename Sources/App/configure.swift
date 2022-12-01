@@ -66,6 +66,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateRole())
     app.migrations.add(CreateDepositCode())
     app.migrations.add(CreateShop())
+    app.migrations.add(CreateWithdrawalCode())
 
     app.views.use(.wrappedLeaf)
 

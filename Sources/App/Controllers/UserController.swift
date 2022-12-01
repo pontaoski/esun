@@ -47,6 +47,8 @@ struct UserController: RouteCollection {
         group.get(":username", "shops", use: shops)
         group.post("transfer-money", use: transfer)
         group.post("create-deposit-code", use: createDepositCode)
+        group.post("use-deposit-code", use: useDepositCode)
+        group.post("use-withdrawal-code", use: useWithdrawalCode)
     }
     struct UserpageData: Content {
         let user: User
@@ -61,6 +63,79 @@ struct UserController: RouteCollection {
     func me(req: Request) async throws -> UserpageData {
         let user: User = try req.auth.require()
         return UserpageData(user: user)
+    }
+    struct CodeRequest: Content {
+        let code: String
+    }
+    struct DepositCodeInformation: Content {
+        let ironAmount: Int
+        let diamondAmount: Int
+    }
+    struct WithdrawalCodeInformation: Content {
+        let password: String
+        let ironAmount: Int
+        let diamondAmount: Int
+    }
+    enum CodeUseError: Error {
+        case codeAlreadyUsed
+        case notEnoughMoney
+    }
+    func useDepositCode(on req: Request) async throws -> DepositCodeInformation {
+        let me: User = try req.auth.require()
+        try await me.$customer.load(on: req.db)
+        let request = try req.content.decode(CodeRequest.self)
+
+        guard let code = try await DepositCode.query(on: req.db)
+            .filter(\.$code == request.code.lowercased().replacingOccurrences(of: "-", with: ""))
+            .first() else {
+                throw Abort(.notFound)
+            }
+
+        guard code.usedAt == nil else {
+            throw CodeUseError.codeAlreadyUsed
+        }
+
+        return try await req.db.transaction { db in
+            me.customer.ironBalance += code.ironAmount
+            me.customer.diamondBalance += code.diamondAmount
+            code.usedAt = Date()
+
+            try await me.customer.save(on: db)
+            try await code.save(on: db)
+            try await AuditLogEntry.logUseDepositCode(by: me.customer, code: code.code, iron: code.ironAmount, diamonds: code.diamondAmount, on: db)
+
+            return .init(ironAmount: code.ironAmount, diamondAmount: code.diamondAmount)
+        }
+    }
+    func useWithdrawalCode(on req: Request) async throws -> WithdrawalCodeInformation {
+        let me: User = try req.auth.require()
+        try await me.$customer.load(on: req.db)
+        let request = try req.content.decode(CodeRequest.self)
+
+        guard let code = try await WithdrawalCode.query(on: req.db)
+            .filter(\.$code == request.code.lowercased().replacingOccurrences(of: "-", with: ""))
+            .first() else {
+                throw Abort(.notFound)
+            }
+
+        guard code.usedAt == nil else {
+            throw CodeUseError.codeAlreadyUsed
+        }
+
+        return try await req.db.transaction { db in
+            me.customer.ironBalance -= code.ironAmount
+            me.customer.diamondBalance -= code.diamondAmount
+            guard me.customer.ironBalance >= 0, me.customer.diamondBalance >= 0 else {
+                throw CodeUseError.notEnoughMoney
+            }
+            code.usedAt = Date()
+
+            try await me.customer.save(on: db)
+            try await code.save(on: db)
+            try await AuditLogEntry.logUseWithdrawalCode(by: me.customer, code: code.code, iron: code.ironAmount, diamonds: code.diamondAmount, on: db)
+
+            return .init(password: code.password, ironAmount: code.ironAmount, diamondAmount: code.diamondAmount)
+        }
     }
     struct AuditLogPageData: Content {
         let pages: Page<AuditLogEntry>

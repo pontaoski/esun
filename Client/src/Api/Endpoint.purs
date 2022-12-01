@@ -25,6 +25,7 @@ data Endpoint
     | Shops Username Pagination
     | TransferMoney
     | CreateDepositCode
+    | CreateWithdrawalCode
     | TellerAdjustBalance Username
     | Shop Shopname
     | CreateShop
@@ -53,6 +54,7 @@ endpointCodec = root $ sum
         }
     , "TransferMoney": "accounts" / "transfer-money" / noArgs
     , "CreateDepositCode": "accounts" / "create-deposit-code" / noArgs
+    , "CreateWithdrawalCode": "teller" / "create-withdrawal-code" / noArgs
     , "TellerAdjustBalance": ("accounts" / uname segment / "teller") / "adjust-balance"
     , "Shop": "shops" / sname segment
     , "CreateShop": "shops" / "create" / noArgs

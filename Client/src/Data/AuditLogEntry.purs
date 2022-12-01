@@ -41,16 +41,25 @@ data AuditLogEntry
     = MoneyTransfer { iron :: Int, diamonds :: Int, from :: AuditLogCustomer, to :: AuditLogCustomer }
     | BalanceAdjustment { iron :: Int, diamonds :: Int, target :: AuditLogCustomer, teller :: AuditLogCustomer }
     | CreateDepositCode { code :: String, iron :: Int, diamonds :: Int, creator :: AuditLogCustomer }
+    | CreateWithdrawalCode { code :: String, iron :: Int, diamonds :: Int, creator :: AuditLogCustomer }
+    | UseDepositCode { code :: String, iron :: Int, diamonds :: Int, user :: AuditLogCustomer }
+    | UseWithdrawalCode { code :: String, iron :: Int, diamonds :: Int, user :: AuditLogCustomer }
 
 data JSONAuditLogEntry
     = JMoneyTransfer { iron :: Int, diamonds :: Int }
     | JBalanceAdjustment { iron :: Int, diamonds :: Int }
     | JCreateDepositCode { code :: String, iron :: Int, diamonds :: Int }
+    | JCreateWithdrawalCode { code :: String, iron :: Int, diamonds :: Int }
+    | JUseDepositCode { code :: String, iron :: Int, diamonds :: Int }
+    | JUseWithdrawalCode { code :: String, iron :: Int, diamonds :: Int }
 
 data JSONAuditLogTag
     = JTMoneyTransfer
     | JTBalanceAdjustment
     | JTCreateDepositCode
+    | JTCreateWithdrawalCode
+    | JTUseDepositCode
+    | JTUseWithdrawalCode
 
 swiftToArgonaut :: J.Json -> Either JsonDecodeError J.Json
 swiftToArgonaut js = do
@@ -102,22 +111,34 @@ jALE =
                 JTMoneyTransfer -> "moneyTransfer"
                 JTBalanceAdjustment -> "balanceAdjustment"
                 JTCreateDepositCode -> "createDepositCode"
+                JTCreateWithdrawalCode -> "createWithdrawalCode"
+                JTUseDepositCode -> "useDepositCode"
+                JTUseWithdrawalCode -> "useWithdrawalCode"
         parseTag =
             case _ of
                 "moneyTransfer" -> Just JTMoneyTransfer
                 "balanceAdjustment" -> Just JTBalanceAdjustment
                 "createDepositCode" -> Just JTCreateDepositCode
+                "createWithdrawalCode" -> Just JTCreateWithdrawalCode
+                "useDepositCode" -> Just JTUseDepositCode
+                "useWithdrawalCode" -> Just JTUseWithdrawalCode
                 _ -> Nothing
         f =
             case _ of
                 JTMoneyTransfer -> Right $ Codec.decode codecMoneyTransfer
                 JTBalanceAdjustment -> Right $ Codec.decode codecBalanceAdjustment
                 JTCreateDepositCode -> Right $ Codec.decode codecCreateDepositCode
+                JTCreateWithdrawalCode -> Right $ Codec.decode codecCreateWithdrawalCode
+                JTUseDepositCode -> Right $ Codec.decode codecUseDepositCode
+                JTUseWithdrawalCode -> Right $ Codec.decode codecUseWithdrawalCode
         g =
             case _ of
                 JMoneyTransfer x -> Tuple JTMoneyTransfer $ Just $ Codec.encode codecMoneyTransfer x
                 JBalanceAdjustment x -> Tuple JTBalanceAdjustment $ Just $ Codec.encode codecBalanceAdjustment x
                 JCreateDepositCode x -> Tuple JTCreateDepositCode $ Just $ Codec.encode codecCreateDepositCode x
+                JCreateWithdrawalCode x -> Tuple JTCreateWithdrawalCode $ Just $ Codec.encode codecCreateWithdrawalCode x
+                JUseDepositCode x -> Tuple JTUseDepositCode $ Just $ Codec.encode codecUseDepositCode x
+                JUseWithdrawalCode x -> Tuple JTUseWithdrawalCode $ Just $ Codec.encode codecUseWithdrawalCode x
 
         codecMoneyTransfer =
             CAR.object "MoneyTransfer"
@@ -140,6 +161,30 @@ jALE =
                 , code : CA.string
                 }
             # map JCreateDepositCode
+
+        codecCreateWithdrawalCode =
+            CAR.object "CreateDepositCode"
+                { iron: CA.int
+                , diamonds: CA.int
+                , code : CA.string
+                }
+            # map JCreateWithdrawalCode
+
+        codecUseDepositCode =
+            CAR.object "CreateDepositCode"
+                { iron: CA.int
+                , diamonds: CA.int
+                , code : CA.string
+                }
+            # map JUseDepositCode
+
+        codecUseWithdrawalCode =
+            CAR.object "CreateDepositCode"
+                { iron: CA.int
+                , diamonds: CA.int
+                , code : CA.string
+                }
+            # map JUseWithdrawalCode
 
 codec :: JsonCodec AuditLogEntry
 codec =
@@ -166,6 +211,15 @@ codec =
                 JCreateDepositCode { code, iron, diamonds } -> do
                     creator <- getRole "initiator"
                     Right $ CreateDepositCode { code, iron, diamonds, creator }
+                JCreateWithdrawalCode { code, iron, diamonds } -> do
+                    user <- getRole "initiator"
+                    Right $ CreateWithdrawalCode { code, iron, diamonds, creator: user }
+                JUseDepositCode { code, iron, diamonds } -> do
+                    user <- getRole "initiator"
+                    Right $ UseDepositCode { code, iron, diamonds, user }
+                JUseWithdrawalCode { code, iron, diamonds } -> do
+                    user <- getRole "initiator"
+                    Right $ UseWithdrawalCode { code, iron, diamonds, user }
 
         enc :: AuditLogEntry -> J.Json
         enc _ =

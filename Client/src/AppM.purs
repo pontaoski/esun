@@ -95,6 +95,19 @@ instance depositCodeAppM :: DepositCode AppM where
             Nothing ->
                 pure $ Left $ explain "creating deposit code" Error.AuthRequired
 
+    useDepositCode code = do
+        pure $ Left $ NotImplemented "using deposit code"
+    createWithdrawalCode { password, iron, diamonds } = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.createWithdrawalCode baseUrl me.token { password, iron, diamonds }
+                pure res
+            Nothing ->
+                pure $ Left $ explain "creating deposit code" Error.AuthRequired
+    useWithdrawalCode code = do
+        pure $ Left $ NotImplemented "using withdrawal code"
+
 instance auditLogsAppM :: AuditLogs AppM where
     getAuditLog pagination username = do
         { baseUrl, currentUser } <- getStore

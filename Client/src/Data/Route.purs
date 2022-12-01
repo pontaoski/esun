@@ -22,6 +22,8 @@ data Route
 data AuthRoute 
     = CreateDepositCode
     | DepositCodeCreated String
+    | CreateWithdrawalCode
+    | WithdrawalCodeCreated String
     | AuditLog Username Pagination
     | TransferFunds Username
     | AdjustBalance Username
@@ -59,6 +61,8 @@ authRouteCodec = sum
         }
     , "TransferFunds": "accounts" / uname segment / "transfer-funds"
     , "AdjustBalance": "accounts" / uname segment / "adjust-balance"
+    , "CreateWithdrawalCode": "create-withdrawal-code" / noArgs
+    , "WithdrawalCodeCreated": "withdrawal-code-created" / string segment
     }
 
 routeCodec :: RouteDuplex' Route

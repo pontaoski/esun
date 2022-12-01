@@ -157,6 +157,17 @@ createDepositCode baseUrl token { iron, diamonds } = do
                 Right p ->
                     pure $ Right p.code
 
+createWithdrawalCode :: forall m. MonadAff m => BaseURL -> Token -> { password :: String, iron :: Int, diamonds :: Int } -> m (Either Error String)
+createWithdrawalCode baseUrl token { password, iron, diamonds } = do
+    res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: CreateWithdrawalCode, method: Post $ Just (Codec.encode (CAR.object "params" { password: CA.string, ironAmount: CA.int, diamondAmount: CA.int }) { password: password, ironAmount: iron, diamondAmount: diamonds }) }
+    case res of
+        Left e -> pure $ Left $ explain "creating withdrawal code" e
+        Right v -> do
+            case Codec.decode (CAR.object "response" { code: CA.string }) v.body of
+                Left er -> pure $ Left $ explain "parsing withdrawal code response" er
+                Right p ->
+                    pure $ Right p.code
+
 adjustBalance :: forall m. MonadAff m => BaseURL -> Token -> Username -> { iron :: Int, diamonds :: Int } -> m (Either Error Unit)
 adjustBalance baseUrl token target { iron, diamonds } = do
     res <- liftAff $ request $

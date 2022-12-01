@@ -100,6 +100,30 @@ component =
                             <> (show diamonds) <> "d"
                         , HH.text $ " (" <> code <> ")"
                         ]
+                ALE.CreateWithdrawalCode { code, iron, diamonds, creator } ->
+                    HH.span_
+                        [ customerLink creator
+                        , HH.text $ " created a withdrawal code for "
+                            <> (show iron) <> "i"
+                            <> (show diamonds) <> "d"
+                        , HH.text $ " (" <> code <> ")"
+                        ]
+                ALE.UseDepositCode { code, iron, diamonds, user } ->
+                    HH.span_
+                        [ customerLink user
+                        , HH.text $ " used a deposit code for "
+                            <> (show iron) <> "i"
+                            <> (show diamonds) <> "d"
+                        , HH.text $ " (" <> code <> ")"
+                        ]
+                ALE.UseWithdrawalCode { code, iron, diamonds, user } ->
+                    HH.span_
+                        [ customerLink user
+                        , HH.text $ " used a withdrawal code for "
+                            <> (show iron) <> "i"
+                            <> (show diamonds) <> "d"
+                        , HH.text $ " (" <> code <> ")"
+                        ]
 
     handleAction :: Action -> H.HalogenM State Action () o m Unit
     handleAction = case _ of

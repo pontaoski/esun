@@ -12,7 +12,6 @@ import Capability.Navigate (class Navigate, navigate)
 import Component.HTML.Utils (css)
 import Component.Header as Header
 import Component.Utils (OpaqueSlot)
-import Debug as Debug
 import Data.Either (hush)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Profile (MyProfile)
@@ -20,16 +19,18 @@ import Data.Route (AuthRoute(..), Route(..), routeCodec)
 import Data.Token (Token)
 import Data.Tuple (Tuple(..))
 import Data.Username (Username(..))
+import Debug as Debug
 import Effect.Aff.Class (class MonadAff)
 import Halogen (liftEffect)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Store.Monad (class MonadStore)
+import Page.AdjustBalance as AdjustBalance
 import Page.AuditLog as AuditLog
 import Page.CreateDepositCode as CreateDepositCode
+import Page.CreateWithdrawalCode as CreateWithdrawalCode
 import Page.Home as Home
 import Page.TransferFunds as TransferFunds
-import Page.AdjustBalance as AdjustBalance
 import Page.User as User
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
@@ -55,6 +56,7 @@ type ChildSlots =
     , auditLog :: OpaqueSlot Unit
     , transferFunds :: OpaqueSlot Unit
     , adjustBalance :: OpaqueSlot Unit
+    , createWithdrawalCode :: OpaqueSlot Unit
     )
 
 component
@@ -127,6 +129,10 @@ component =
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
                                             , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
                                             ]
+                                        CreateWithdrawalCode ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
+                                            , HH.slot_ (Proxy :: _ "createWithdrawalCode") unit CreateWithdrawalCode.component x
+                                            ]
                                         TransferFunds username ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component username
                                             , HH.slot_ (Proxy :: _ "transferFunds") unit TransferFunds.component (Tuple username $ if x.username == username then Username "" else username)
@@ -143,6 +149,17 @@ component =
                                                 , HH.div [ css ["folder-body", "space-y-4"] ]
                                                     [ HH.p [ css ["w-full", "text-center", "text-3xl"] ] [ HH.text code ]
                                                     , HH.p_ [ HH.text "You can now give this deposit code to someone else." ]
+                                                    ]
+                                                ]
+                                            ]
+                                        WithdrawalCodeCreated code ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
+                                            , HH.slot_ (Proxy :: _ "createWithdrawalCode") unit CreateWithdrawalCode.component x
+                                            , HH.div [ css ["folder"] ]
+                                                [ HH.div [ css ["folder-tab"] ] [ HH.text "Withdrawal Code Successfully Created" ]
+                                                , HH.div [ css ["folder-body", "space-y-4"] ]
+                                                    [ HH.p [ css ["w-full", "text-center", "text-3xl"] ] [ HH.text code ]
+                                                    , HH.p_ [ HH.text "You can now give this withdrawal code to someone else." ]
                                                     ]
                                                 ]
                                             ]

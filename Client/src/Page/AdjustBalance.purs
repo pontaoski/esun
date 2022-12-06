@@ -1,4 +1,7 @@
-module Page.AdjustBalance where
+module Page.AdjustBalance
+  ( component
+  )
+  where
 
 import Prelude
 

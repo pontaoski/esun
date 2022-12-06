@@ -250,7 +250,7 @@ struct UserController: RouteCollection {
 
             try await AuditLogEntry.logCreateDepositCode(by: user.customer, code: code, iron: data.ironAmount, diamonds: data.diamondAmount, on: db)
 
-            return DepositCodeResponse(code: depositCode.code)
+            return DepositCodeResponse(code: code)
         }
     }
 }

@@ -24,6 +24,8 @@ data AuthRoute
     | DepositCodeCreated String
     | CreateWithdrawalCode
     | WithdrawalCodeCreated String
+    | UseDepositCode
+    | UseWithdrawalCode
     | AuditLog Username Pagination
     | TransferFunds Username
     | AdjustBalance Username
@@ -59,6 +61,8 @@ authRouteCodec = sum
         { page: optional <<< int
         , per: optional <<< int
         }
+    , "UseDepositCode": "use-deposit-code" / noArgs
+    , "UseWithdrawalCode": "use-withdrawal-code" / noArgs
     , "TransferFunds": "accounts" / uname segment / "transfer-funds"
     , "AdjustBalance": "accounts" / uname segment / "adjust-balance"
     , "CreateWithdrawalCode": "create-withdrawal-code" / noArgs

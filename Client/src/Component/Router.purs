@@ -1,4 +1,8 @@
-module Component.Router where
+module Component.Router
+  ( Query(..)
+  , component
+  )
+  where
 
 import Prelude
 
@@ -29,6 +33,8 @@ import Page.AdjustBalance as AdjustBalance
 import Page.AuditLog as AuditLog
 import Page.CreateDepositCode as CreateDepositCode
 import Page.CreateWithdrawalCode as CreateWithdrawalCode
+import Page.UseDepositCode as UseDepositCode
+import Page.UseWithdrawalCode as UseWithdrawalCode
 import Page.Home as Home
 import Page.TransferFunds as TransferFunds
 import Page.User as User
@@ -57,6 +63,8 @@ type ChildSlots =
     , transferFunds :: OpaqueSlot Unit
     , adjustBalance :: OpaqueSlot Unit
     , createWithdrawalCode :: OpaqueSlot Unit
+    , useDepositCode :: OpaqueSlot Unit
+    , useWithdrawalCode :: OpaqueSlot Unit
     )
 
 component
@@ -128,6 +136,14 @@ component =
                                         CreateDepositCode ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
                                             , HH.slot_ (Proxy :: _ "createDepositCode") unit CreateDepositCode.component x
+                                            ]
+                                        UseDepositCode ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
+                                            , HH.slot_ (Proxy :: _ "useDepositCode") unit UseDepositCode.component x
+                                            ]
+                                        UseWithdrawalCode ->
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
+                                            , HH.slot_ (Proxy :: _ "useWithdrawalCode") unit UseWithdrawalCode.component x
                                             ]
                                         CreateWithdrawalCode ->
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component x.username

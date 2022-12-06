@@ -1,4 +1,7 @@
-module Page.TransferFunds where
+module Page.TransferFunds
+  ( component
+  )
+  where
 
 import Prelude
 

@@ -12,12 +12,11 @@ import Capability.Funds (class Funds)
 import Capability.Logging (class Logging, LogLevel(..))
 import Capability.Logging as Logging
 import Capability.Navigate (class Navigate, navigate)
-import Control.Monad.Cont.Trans (lift)
 import Data.Either (Either(..))
-import Data.Error (Error(..), explain)
+import Data.Error (explain)
 import Data.Error as Error
 import Data.Maybe (Maybe(..))
-import Data.Profile (MyProfile, SiteRole(..))
+import Data.Profile (SiteRole(..))
 import Data.Route (Route(..))
 import Data.Route as Route
 import Effect.Aff (Aff)
@@ -31,7 +30,6 @@ import Routing.Hash (setHash)
 import Safe.Coerce (coerce)
 import Store (Action(..), Store)
 import Store as Store
-import Web.DOM.Node (baseURI)
 
 newtype AppM a = AppM (StoreT Store.Action Store.Store Aff a)
 
@@ -96,7 +94,13 @@ instance depositCodeAppM :: DepositCode AppM where
                 pure $ Left $ explain "creating deposit code" Error.AuthRequired
 
     useDepositCode code = do
-        pure $ Left $ NotImplemented "using deposit code"
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.useDepositCode baseUrl me.token code
+                pure res
+            Nothing ->
+                pure $ Left $ explain "using deposit code" Error.AuthRequired
     createWithdrawalCode { password, iron, diamonds } = do
         { baseUrl, currentUser } <- getStore
         case currentUser of
@@ -106,7 +110,13 @@ instance depositCodeAppM :: DepositCode AppM where
             Nothing ->
                 pure $ Left $ explain "creating deposit code" Error.AuthRequired
     useWithdrawalCode code = do
-        pure $ Left $ NotImplemented "using withdrawal code"
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.useWithdrawalCode baseUrl me.token code
+                pure res
+            Nothing ->
+                pure $ Left $ explain "using withdrawal code" Error.AuthRequired
 
 instance auditLogsAppM :: AuditLogs AppM where
     getAuditLog pagination username = do

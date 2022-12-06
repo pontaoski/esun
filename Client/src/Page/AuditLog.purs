@@ -1,4 +1,7 @@
-module Page.AuditLog where
+module Page.AuditLog
+  ( component
+  )
+  where
 
 import PreludeP
 

@@ -1,4 +1,7 @@
-module Page.User where
+module Page.User
+  ( component
+  )
+  where
 
 import Prelude
 
@@ -91,6 +94,8 @@ component =
                             HH.div [ css ["flex", "flex-row", "space-x-4"] ]
                                 [ HH.a [ css ["button"], safeHref $ AuthRequired $ AuditLog user.username { page: Nothing, per: Nothing } ] [ HH.text "Audit Log" ]
                                 , HH.a [ css ["button"], safeHref $ AuthRequired $ CreateDepositCode ] [ HH.text "Create a Deposit Code" ]
+                                , HH.a [ css ["button"], safeHref $ AuthRequired $ UseDepositCode ] [ HH.text "Redeem a Deposit Code" ]
+                                , HH.a [ css ["button"], safeHref $ AuthRequired $ UseWithdrawalCode ] [ HH.text "Redeem a Withdrawal Code" ]
                                 ]
                         else
                             nichts

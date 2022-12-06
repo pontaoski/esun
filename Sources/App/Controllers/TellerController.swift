@@ -77,7 +77,7 @@ struct TellerController: RouteCollection {
 
             try await AuditLogEntry.logCreateWithdrawalCode(by: user.customer, code: code, iron: data.ironAmount, diamonds: data.diamondAmount, on: db)
 
-            return WithdrawalCodeResponse(code: withdrawalCode.code)
+            return WithdrawalCodeResponse(code: code)
         }
     }
 }

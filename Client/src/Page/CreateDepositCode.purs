@@ -1,4 +1,7 @@
-module Page.CreateDepositCode where
+module Page.CreateDepositCode
+  ( component
+  )
+  where
 
 import Prelude
 

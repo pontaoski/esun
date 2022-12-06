@@ -168,6 +168,36 @@ createWithdrawalCode baseUrl token { password, iron, diamonds } = do
                 Right p ->
                     pure $ Right p.code
 
+encodeCodeRequest ∷ String → Json
+encodeCodeRequest code =
+    Codec.encode (CAR.object "params" { code: CA.string }) { code }
+
+useDepositCode :: forall m. MonadAff m => BaseURL -> Token -> String -> m (Either Error { iron :: Int, diamonds :: Int })
+useDepositCode baseUrl token code = do
+    res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: UseDepositCode, method: Post $ Just $ encodeCodeRequest code }
+    case res of
+        Left e ->
+            pure $ Left $ explain "creating deposit code" e
+        Right v -> do
+            case Codec.decode (CAR.object "response" { ironAmount: CA.int, diamondAmount: CA.int }) v.body of
+                Left er ->
+                    pure $ Left $ explain "parsing deposit code response" er
+                Right { ironAmount, diamondAmount } ->
+                    pure $ Right { iron: ironAmount, diamonds: diamondAmount }
+
+useWithdrawalCode :: forall m. MonadAff m => BaseURL -> Token -> String -> m (Either Error { iron :: Int, diamonds :: Int, password :: String })
+useWithdrawalCode baseUrl token code = do
+    res <- liftAff $ request $ defaultRequest baseUrl (Just token) { endpoint: UseWithdrawalCode, method: Post $ Just $ encodeCodeRequest code }
+    case res of
+        Left e ->
+            pure $ Left $ explain "creating deposit code" e
+        Right v -> do
+            case Codec.decode (CAR.object "response" { password: CA.string, ironAmount: CA.int, diamondAmount: CA.int }) v.body of
+                Left er ->
+                    pure $ Left $ explain "parsing deposit code response" er
+                Right { ironAmount, diamondAmount, password } ->
+                    pure $ Right { iron: ironAmount, diamonds: diamondAmount, password }
+
 adjustBalance :: forall m. MonadAff m => BaseURL -> Token -> Username -> { iron :: Int, diamonds :: Int } -> m (Either Error Unit)
 adjustBalance baseUrl token target { iron, diamonds } = do
     res <- liftAff $ request $

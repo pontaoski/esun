@@ -1,4 +1,7 @@
-module Component.Header where
+module Component.Header
+  ( component
+  )
+  where
 
 import Prelude
 

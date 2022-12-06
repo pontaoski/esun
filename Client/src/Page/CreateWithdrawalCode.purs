@@ -1,4 +1,7 @@
-module Page.CreateWithdrawalCode where
+module Page.CreateWithdrawalCode
+  ( component
+  )
+  where
 
 import Prelude
 
@@ -75,7 +78,7 @@ component =
                     ]
                 , HH.div_ 
                     [ HH.label [ HP.for "password" ] [ HH.text "Password:" ]
-                    , HH.input [ HP.id "password", HP.type_ HP.InputNumber, HP.min (toNumber 0), HE.onValueInput Diamond ]
+                    , HH.input [ HP.id "password", HP.type_ HP.InputText, HP.min (toNumber 0), HE.onValueInput Password ]
                     ]
                 , HH.input [ HP.type_ HP.InputSubmit, HP.value "Create Withdrawal Code", HE.onClick $ \_ -> Submit ]
                 ]

@@ -1,4 +1,7 @@
-module Page.Home where
+module Page.Home
+  ( component
+  )
+  where
 
 import Prelude
 

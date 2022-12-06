@@ -26,6 +26,8 @@ data Endpoint
     | TransferMoney
     | CreateDepositCode
     | CreateWithdrawalCode
+    | UseDepositCode
+    | UseWithdrawalCode
     | TellerAdjustBalance Username
     | Shop Shopname
     | CreateShop
@@ -58,6 +60,8 @@ endpointCodec = root $ sum
     , "TellerAdjustBalance": ("accounts" / uname segment / "teller") / "adjust-balance"
     , "Shop": "shops" / sname segment
     , "CreateShop": "shops" / "create" / noArgs
+    , "UseDepositCode": "accounts" / "use-deposit-code" / noArgs
+    , "UseWithdrawalCode": "accounts" / "use-withdrawal-code" / noArgs
     , "Items": "shops" / sname segment / "items" ?
         { page: optional <<< int
         , per: optional <<< int

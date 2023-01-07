@@ -2,6 +2,10 @@ import Fluent
 import Vapor
 import JSONValueRX
 
+enum BuyableThing: Codable {
+    case lotteryTicket(lottery: UUID, name: String, slug: String)
+}
+
 final class AuditLogEntry: Model {
     static let schema = "audit_log_entries"
 
@@ -12,6 +16,7 @@ final class AuditLogEntry: Model {
         case createWithdrawalCode
         case useDepositCode
         case useWithdrawalCode
+        case boughtSomething
     }
     enum Data: Codable {
         case moneyTransfer(iron: Int, diamonds: Int)
@@ -20,6 +25,7 @@ final class AuditLogEntry: Model {
         case createWithdrawalCode(code: String, iron: Int, diamonds: Int)
         case useDepositCode(code: String, iron: Int, diamonds: Int)
         case useWithdrawalCode(code: String, iron: Int, diamonds: Int)
+        case boughtSomething(iron: Int, diamonds: Int, what: BuyableThing, from: UUID)
     }
     struct Validator: AsyncModelMiddleware {
         func create(model: AuditLogEntry, on db: Database, next: AnyAsyncModelResponder) async throws {
@@ -56,6 +62,10 @@ final class AuditLogEntry: Model {
                 }
             case .useWithdrawalCode:
                 guard case .useWithdrawalCode = decoded else {
+                    throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
+                }
+            case .boughtSomething:
+                guard case .boughtSomething = decoded else {
                     throw Abort(.internalServerError, reason: "inconsistent audit log kind and data")
                 }
             }
@@ -113,6 +123,29 @@ final class AuditLogEntry: Model {
         involvement2.$customer.id = by.id!
         involvement2.$entry.id = entry.id!
         involvement2.role = "initiator"
+
+        try await involvement2.save(on: db)
+    }
+
+    /// assumes database is in a transaction
+    static func logBuyingSomething(by: Customer, what: BuyableThing, iron: Int, diamonds: Int, from seller: UUID, on db: Database) async throws {
+        let entry = AuditLogEntry()
+        entry.kind = .boughtSomething
+        entry.data = try JSONValue.decode(JSONEncoder().encode(Data.boughtSomething(iron: iron, diamonds: diamonds, what: what, from: seller)))
+
+        try await entry.save(on: db)
+
+        let involvement = AuditLogInvolvement()
+        involvement.$customer.id = by.id!
+        involvement.$entry.id = entry.id!
+        involvement.role = "initiator"
+
+        try await involvement.save(on: db)
+
+        let involvement2 = AuditLogInvolvement()
+        involvement2.$customer.id = seller
+        involvement2.$entry.id = entry.id!
+        involvement.role = "merchant"
 
         try await involvement2.save(on: db)
     }

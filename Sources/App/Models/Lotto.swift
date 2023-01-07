@@ -35,6 +35,24 @@ final class Lotto: Model {
 
     init() {
     }
+
+    init(
+        creator: Customer,
+        ticketPrice: Int,
+        maxTicketsPerCustomer: Int,
+        houseCut: Float,
+        title: String,
+        slug: String,
+        description: String
+    ) {
+        self.$creator.id = creator.id!
+        self.ticketPrice = ticketPrice
+        self.maxTicketsPerCustomer = maxTicketsPerCustomer
+        self.houseCut = houseCut
+        self.title = title
+        self.slug = slug
+        self.description = description
+    }
 }
 
 final class LottoTicket: Model {

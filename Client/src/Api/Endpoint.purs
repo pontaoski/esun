@@ -4,6 +4,8 @@ import Prelude hiding ((/))
 
 import Data.Either (note)
 import Data.Generic.Rep (class Generic)
+import Data.Lottoname (Lottoname)
+import Data.Lottoname as Lottoname
 import Data.Maybe (Maybe)
 import Data.Shopname (Shopname)
 import Data.Shopname as Shopname
@@ -33,6 +35,11 @@ data Endpoint
     | CreateShop
     | Items Shopname Pagination
     | CreateItem Shopname
+    | CreateLottery
+    | MyLotteries
+    | GetLotto Lottoname
+    | BuyLottoTicket Lottoname
+    | RollWinner Lottoname
 
 derive instance genericEndpoint :: Generic Endpoint _
 
@@ -41,6 +48,9 @@ uname = as Username.toString (Username.parse >>> note "Bad username")
 
 sname :: RouteDuplex' String -> RouteDuplex' Shopname
 sname = as Shopname.toString (Shopname.parse >>> note "Bad shopname")
+
+lname :: RouteDuplex' String -> RouteDuplex' Lottoname
+lname = as Lottoname.toString (Lottoname.parse >>> note "Bad lottoname")
 
 endpointCodec :: RouteDuplex' Endpoint
 endpointCodec = root $ sum
@@ -67,4 +77,9 @@ endpointCodec = root $ sum
         , per: optional <<< int
         }
     , "CreateItem": "shops" / sname segment / "items"
+    , "CreateLottery": "lotto" / "create" / noArgs
+    , "MyLotteries": "lotto" / "my" / noArgs
+    , "GetLotto": "lotto" / lname segment
+    , "BuyLottoTicket": "lotto" / lname segment / "buy-ticket"
+    , "RollWinner": "lotto" / lname segment / "roll-winner"
     }

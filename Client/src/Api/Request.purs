@@ -16,9 +16,13 @@ import Data.Codec as Codec
 import Data.Codec.Argonaut (JsonCodec, JsonDecodeError, printJsonDecodeError)
 import Data.Codec.Argonaut as CA
 import Data.Codec.Argonaut.Record as CAR
+import Data.Customer (Customer)
+import Data.Customer as Customer
 import Data.Either (Either(..))
 import Data.Error (Error(..), explain)
 import Data.HTTP.Method (Method(..))
+import Data.Lotto (Lotto, Lottoname)
+import Data.Lotto as Lotto
 import Data.Maybe (Maybe(..))
 import Data.Page (Page)
 import Data.Page as Page
@@ -209,6 +213,80 @@ adjustBalance baseUrl token target { iron, diamonds } = do
             pure $ Right unit
         Right _ ->
             pure $ Left $ Custom "failed"
+
+type CreateLottoRequest =
+    { title :: String
+    , description :: String
+    , slug :: String
+    , ticketPrice :: Int
+    , maxTicketsPerCustomer :: Int
+    , houseCut :: Number
+    }
+
+createLotto :: forall m. MonadAff m => BaseURL -> Token -> CreateLottoRequest -> m (Either Error Lotto)
+createLotto baseUrl token information = do
+    let body = Codec.encode (CAR.object "params"
+        { title: CA.string
+        , description: CA.string
+        , slug: CA.string
+        , ticketPrice: CA.int
+        , maxTicketsPerCustomer: CA.int
+        , houseCut: CA.number
+        }) information
+    res <- liftAff $ request $
+        (defaultRequest baseUrl (Just token) { endpoint: CreateLottery, method: Post $ Just body })
+    case res of
+        Left e ->
+            pure $ Left $ explain "creating lotto" e
+        Right v ->
+            case Codec.decode (CAR.object "response" { lotto: Lotto.codec }) v.body of
+                Left er ->
+                    pure $ Left $ explain "parsing lotto response" er
+                Right { lotto } ->
+                    pure $ Right lotto
+
+myLotteries :: forall m. MonadAff m => BaseURL -> Token -> m (Either Error (Page Lotto))
+myLotteries baseUrl token = do
+    res <- liftAff $ request $
+        (defaultRequest baseUrl (Just token) { endpoint: MyLotteries, method: Get })
+    case res of
+        Left e ->
+            pure $ Left $ explain "getting lottos" e
+        Right v -> case Codec.decode (CAR.object "response" { lottos: pageResponseCodec Lotto.codec }) v.body of
+            Left er ->
+                pure $ Left $ explain "parsing lotto response" er
+            Right { lottos } ->
+                pure $ Right lottos
+
+rollLotteryWinner :: forall m. MonadAff m => BaseURL -> Token -> Lottoname -> m (Either Error Customer)
+rollLotteryWinner baseUrl token name = do
+    res <- liftAff $ request $
+        (defaultRequest baseUrl (Just token) { endpoint: RollWinner name, method: Post })
+    case res of
+        Left e ->
+            pure $ Left $ explain "getting lottos" e
+        Right v -> case Codec.decode (CAR.object "response" { who: Customer.codec }) v.body of
+            Left er ->
+                pure $ Left $ explain "parsing lotto response" er
+            Right { who } ->
+                pure $ Right who
+
+-- TODO: tickets
+getLottery :: forall m. MonadAff m => BaseURL -> Token -> Lottoname -> m (Either Error Lotto)
+getLottery baseUrl token name = do
+    res <- liftAff $ request $
+        (defaultRequest baseUrl (Just token) { endpoint: GetLotto name, method: Get })
+    case res of
+        Left e ->
+            pure $ Left $ explain "getting lottery" e
+        Right v -> case Codec.decode (CAR.object "response" { lotto: Lotto.codec }) v.body of
+            Left er ->
+                pure $ Left $ explain "parsing lotto response" er
+            Right { lotto } ->
+                pure $ Right lotto
+
+buyTicket :: forall m. MonadAff m => BaseURL -> Token -> Lottoname -> m (Either Error Unit)
+buyTicket = ?a
 
 tokenKey = "token" :: String
 

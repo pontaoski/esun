@@ -22,6 +22,7 @@ to generate this file without the comments in this block.
   , "codec"
   , "codec-argonaut"
   , "console"
+  , "datetime"
   , "debug"
   , "effect"
   , "either"

@@ -145,7 +145,7 @@ final class AuditLogEntry: Model {
         let involvement2 = AuditLogInvolvement()
         involvement2.$customer.id = seller
         involvement2.$entry.id = entry.id!
-        involvement.role = "merchant"
+        involvement2.role = "merchant"
 
         try await involvement2.save(on: db)
     }

@@ -7,11 +7,13 @@ import PreludeP
 
 import Api.Endpoint (Pagination)
 import Capability.AuditLog (class AuditLogs, getAuditLog)
-import Component.HTML.Utils (css, customerLink)
-import Data.AuditLogEntry (AuditLogEntry(..))
+import Component.HTML.Utils (css, customerLink, safeHref)
+import Data.AuditLogEntry (AuditLogEntry(..), BuyableThing(..))
 import Data.AuditLogEntry as ALE
 import Data.Error as Error
+import Data.Lotto as Lotto
 import Data.Page (Page)
+import Data.Route (Route(..))
 import Data.Tuple (Tuple(..))
 import Data.Username (Username)
 import Data.Username as Username
@@ -126,6 +128,25 @@ component =
                             <> (show iron) <> "i"
                             <> (show diamonds) <> "d"
                         , HH.text $ " (" <> code <> ")"
+                        ]
+                ALE.BoughtSomething { buyer, merchant, iron, diamonds, what } ->
+                    HH.span_
+                        [ customerLink buyer
+                        , HH.text $ " bought "
+                        , case what of
+                            LotteryTicket { name, slug } ->
+                                HH.span_
+                                    [ HH.text "a lottery ticket in "
+                                    , HH.a
+                                        [ css ["linkbutton"]
+                                        , safeHref $ Lottery (Lotto.fromString slug)
+                                        ] [ HH.text name ]
+                                    ]
+                        , HH.text $ " for "
+                            <> (show iron) <> "i"
+                            <> (show diamonds) <> "d"
+                        , HH.text " from "
+                        , customerLink merchant
                         ]
 
     handleAction :: Action -> H.HalogenM State Action () o m Unit

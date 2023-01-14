@@ -4,20 +4,28 @@ module Page.Lottery
 
 import PreludeP
 
-import Capability.Lotto (class Lottos, lottoInfo)
+import Capability.Lotto (class Lottos, buyTicket, lottoInfo)
+import Control.Monad.Cont.Trans (lift)
 import Data.Error as Error
 import Data.Int (toNumber)
+import Data.Interval (millisecond)
 import Data.Lotto (Lotto, Lottoname)
+import Effect.Aff (Milliseconds(..))
+import Effect.Aff as Aff
 import HTML as H
 
 type State =
     { lotto :: Maybe (Either Error Lotto)
     , lottoname :: Lottoname
+    , error :: Maybe Error
+    , showTicketBought :: Boolean
     }
 
 data Action
     = Receive Lottoname
     | Initialize
+    | BuyTicket
+    | RollWinner
 
 component
     :: forall q o m
@@ -38,7 +46,7 @@ component =
     where
     initialState :: Lottoname -> State
     initialState lottoname =
-        { lotto: Nothing, lottoname }
+        { lotto: Nothing, lottoname, error: Nothing, showTicketBought: false }
 
     render :: State -> H.ComponentHTML Action () m
     render state =
@@ -63,6 +71,12 @@ component =
                             , col [ txt "The house takes", big $ (show $ lotto.houseCut*(toNumber 100))<>"%", txt "of the pot" ]
                             ]
                         )
+                    , H.div [ H.css ["flex", "flex-row", "space-x-2", "my-2"] ]
+                        [ H.btn "Buy Ticket" BuyTicket
+                        , H.btn "Roll Winner" RollWinner
+                        ]
+                    , H.conditional state.showTicketBought $
+                        H.div_ [ H.text "Ticket bought!" ]
                     ]
 
         txt text =
@@ -84,3 +98,19 @@ component =
         Receive x -> do
             H.modify_ _ { lottoname = x }
             handleAction Initialize
+        BuyTicket -> do
+            lname <- H.gets _.lottoname
+            res <- buyTicket lname
+            H.modify_ _ { error = Nothing }
+            H.modify_ _ { showTicketBought = false }
+            case res of
+                Left err ->
+                    H.modify_ _ { error = Just err }
+                Right _ -> do
+                    H.modify_ _ { showTicketBought = true }
+                    H.liftAff $ Aff.delay (Milliseconds 5000.0)
+                    H.modify_ _ { showTicketBought = false }
+        RollWinner -> do
+            lname <- H.gets _.lottoname
+            res <- buyTicket lname
+            pure unit

@@ -4,6 +4,7 @@ import Vapor
 enum LottoError: Error {
     case notEnoughMoney
     case closedLottery
+    case tooManyTickets
 }
 
 extension Lotto {
@@ -18,6 +19,11 @@ extension Lotto {
 
         guard customer.diamondBalance >= self.ticketPrice else {
             throw LottoError.notEnoughMoney
+        }
+
+        let count = try await self.$involved.query(on: req.db).filter(\.$buyer.$id == customer.id!).count()
+        guard count < self.maxTicketsPerCustomer else {
+            throw LottoError.tooManyTickets
         }
 
         try await req.db.transaction { db in

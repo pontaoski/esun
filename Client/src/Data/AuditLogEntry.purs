@@ -1,6 +1,7 @@
 module Data.AuditLogEntry
   ( AuditLogCustomer
   , AuditLogEntry(..)
+  , BuyableThing(..)
   , codec
   , swiftToArgonaut
   )
@@ -44,6 +45,13 @@ data AuditLogEntry
     | CreateWithdrawalCode { code :: String, iron :: Int, diamonds :: Int, creator :: AuditLogCustomer }
     | UseDepositCode { code :: String, iron :: Int, diamonds :: Int, user :: AuditLogCustomer }
     | UseWithdrawalCode { code :: String, iron :: Int, diamonds :: Int, user :: AuditLogCustomer }
+    | BoughtSomething { iron :: Int, diamonds :: Int, what :: BuyableThing, buyer :: AuditLogCustomer, merchant :: AuditLogCustomer }
+
+data BuyableThing
+    = LotteryTicket { lottery :: UUID, name :: String, slug :: String }
+
+data JSONBuyableThingTag
+    = JTLotteryTicket
 
 data JSONAuditLogEntry
     = JMoneyTransfer { iron :: Int, diamonds :: Int }
@@ -52,6 +60,7 @@ data JSONAuditLogEntry
     | JCreateWithdrawalCode { code :: String, iron :: Int, diamonds :: Int }
     | JUseDepositCode { code :: String, iron :: Int, diamonds :: Int }
     | JUseWithdrawalCode { code :: String, iron :: Int, diamonds :: Int }
+    | JBoughtSomething { iron :: Int, diamonds :: Int, what :: BuyableThing }
 
 data JSONAuditLogTag
     = JTMoneyTransfer
@@ -60,6 +69,7 @@ data JSONAuditLogTag
     | JTCreateWithdrawalCode
     | JTUseDepositCode
     | JTUseWithdrawalCode
+    | JTBoughtSomething
 
 swiftToArgonaut :: J.Json -> Either JsonDecodeError J.Json
 swiftToArgonaut js = do
@@ -114,6 +124,7 @@ jALE =
                 JTCreateWithdrawalCode -> "createWithdrawalCode"
                 JTUseDepositCode -> "useDepositCode"
                 JTUseWithdrawalCode -> "useWithdrawalCode"
+                JTBoughtSomething -> "boughtSomething"
         parseTag =
             case _ of
                 "moneyTransfer" -> Just JTMoneyTransfer
@@ -122,6 +133,7 @@ jALE =
                 "createWithdrawalCode" -> Just JTCreateWithdrawalCode
                 "useDepositCode" -> Just JTUseDepositCode
                 "useWithdrawalCode" -> Just JTUseWithdrawalCode
+                "boughtSomething" -> Just JTBoughtSomething
                 _ -> Nothing
         f =
             case _ of
@@ -131,6 +143,7 @@ jALE =
                 JTCreateWithdrawalCode -> Right $ Codec.decode codecCreateWithdrawalCode
                 JTUseDepositCode -> Right $ Codec.decode codecUseDepositCode
                 JTUseWithdrawalCode -> Right $ Codec.decode codecUseWithdrawalCode
+                JTBoughtSomething -> Right $ Codec.decode codecBoughtSomething
         g =
             case _ of
                 JMoneyTransfer x -> Tuple JTMoneyTransfer $ Just $ Codec.encode codecMoneyTransfer x
@@ -139,6 +152,36 @@ jALE =
                 JCreateWithdrawalCode x -> Tuple JTCreateWithdrawalCode $ Just $ Codec.encode codecCreateWithdrawalCode x
                 JUseDepositCode x -> Tuple JTUseDepositCode $ Just $ Codec.encode codecUseDepositCode x
                 JUseWithdrawalCode x -> Tuple JTUseWithdrawalCode $ Just $ Codec.encode codecUseWithdrawalCode x
+                JBoughtSomething x -> Tuple JTBoughtSomething $ Just $ Codec.encode codecBoughtSomething x
+
+        codecJBuyableThing :: JsonCodec BuyableThing
+        codecJBuyableThing =
+            converting $ taggedSum "buyable thing tag" printBTag parseBTag bf bg
+            where
+            printBTag = case _ of
+                JTLotteryTicket -> "lotteryTicket"
+            parseBTag = case _ of
+                "lotteryTicket" -> Just JTLotteryTicket
+                _ -> Nothing
+            bf = case _ of
+                JTLotteryTicket -> Right $ Codec.decode codecLotteryTicket
+            bg = case _ of
+                LotteryTicket x -> Tuple JTLotteryTicket $ Just $ Codec.encode codecLotteryTicket x
+            codecLotteryTicket =
+                CAR.object "LotteryTicket"
+                    { lottery: UUIDCodec.codec
+                    , name: CA.string
+                    , slug: CA.string
+                    }
+                # map LotteryTicket
+
+        codecBoughtSomething =
+            CAR.object "BoughtSomething"
+                { iron: CA.int
+                , diamonds: CA.int
+                , what: codecJBuyableThing
+                }
+            # map JBoughtSomething
 
         codecMoneyTransfer =
             CAR.object "MoneyTransfer"
@@ -220,6 +263,10 @@ codec =
                 JUseWithdrawalCode { code, iron, diamonds } -> do
                     user <- getRole "initiator"
                     Right $ UseWithdrawalCode { code, iron, diamonds, user }
+                JBoughtSomething { what, iron, diamonds } -> do
+                    buyer <- getRole "initiator"
+                    merchant <- getRole "merchant"
+                    Right $ BoughtSomething { iron, diamonds, what, buyer, merchant }
 
         enc :: AuditLogEntry -> J.Json
         enc _ =

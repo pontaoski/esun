@@ -3,6 +3,8 @@ module Component.HTML.Utils where
 import Prelude
 
 import Data.AuditLogEntry (AuditLogEntry, AuditLogCustomer)
+import Data.Error (Error)
+import Data.Error as Error
 import Data.Int as Int
 import Data.Maybe as Maybe
 import Data.Number as Number
@@ -60,3 +62,11 @@ intHandler cb =
 numHandler :: forall a. (Number -> a) -> (String -> a)
 numHandler cb =
     \new -> cb $ Maybe.fromMaybe (Int.toNumber 0) $ Number.fromString new
+
+btn :: forall i w. String -> w -> HH.HTML i w
+btn lbl onClick =
+    HH.a [ css ["button"], HE.onClick \_ -> onClick ] [ HH.text lbl ]
+
+errors :: forall i w. Error -> HH.HTML i w
+errors err =
+    HH.div [ css ["errors"] ] [ HH.div [ css ["error"] ] [ HH.p_ [ HH.text $ Error.toString err ] ] ]

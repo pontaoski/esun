@@ -2,9 +2,10 @@ module Data.Route where
 
 import Prelude hiding ((/))
 
-import Api.Endpoint (Pagination, uname)
+import Api.Endpoint (Pagination, lname, uname)
 import Data.Either (Either, note)
 import Data.Generic.Rep (class Generic)
+import Data.Lotto (Lottoname)
 import Data.Show.Generic (genericShow)
 import Data.Token (Token(..))
 import Data.UUID as UUID
@@ -16,6 +17,7 @@ import Routing.Duplex.Generic.Syntax ((/), (?))
 data Route
     = Home
     | User Username
+    | Lottery Lottoname
     | AuthCallback Token
     | AuthRequired AuthRoute
 
@@ -29,6 +31,8 @@ data AuthRoute
     | AuditLog Username Pagination
     | TransferFunds Username
     | AdjustBalance Username
+    | CreateLotto
+    | MyLotteries
 
 derive instance genericRoute :: Generic Route _
 derive instance eqRoute :: Eq Route
@@ -67,6 +71,8 @@ authRouteCodec = sum
     , "AdjustBalance": "accounts" / uname segment / "adjust-balance"
     , "CreateWithdrawalCode": "create-withdrawal-code" / noArgs
     , "WithdrawalCodeCreated": "withdrawal-code-created" / string segment
+    , "CreateLotto": "create-lottery" / noArgs
+    , "MyLotteries": "my-lotteries" / noArgs
     }
 
 routeCodec :: RouteDuplex' Route
@@ -75,4 +81,5 @@ routeCodec = root $ sum
     , "User": "accounts" / uname segment
     , "AuthCallback": "auth" / "callback" / token segment
     , "AuthRequired": authRouteCodec
+    , "Lottery": "lottery" / lname segment
     }

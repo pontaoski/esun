@@ -12,6 +12,7 @@ import Capability.Auth (class Auth, getCurrentUser, loginUser)
 import Capability.DepositCode (class DepositCode)
 import Capability.Funds (class Funds)
 import Capability.Logging (class Logging, Log(..), LogReason(..), log, log_)
+import Capability.Lotto (class Lottos)
 import Capability.Navigate (class Navigate, navigate)
 import Component.HTML.Utils (css)
 import Component.Header as Header
@@ -33,10 +34,11 @@ import Page.AdjustBalance as AdjustBalance
 import Page.AuditLog as AuditLog
 import Page.CreateDepositCode as CreateDepositCode
 import Page.CreateWithdrawalCode as CreateWithdrawalCode
+import Page.Home as Home
+import Page.Lottery as Lottery
+import Page.TransferFunds as TransferFunds
 import Page.UseDepositCode as UseDepositCode
 import Page.UseWithdrawalCode as UseWithdrawalCode
-import Page.Home as Home
-import Page.TransferFunds as TransferFunds
 import Page.User as User
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
@@ -65,6 +67,7 @@ type ChildSlots =
     , createWithdrawalCode :: OpaqueSlot Unit
     , useDepositCode :: OpaqueSlot Unit
     , useWithdrawalCode :: OpaqueSlot Unit
+    , lottery :: OpaqueSlot Unit
     )
 
 component
@@ -78,6 +81,7 @@ component
     => Logging m
     => AuditLogs m
     => Funds m
+    => Lottos m
     => H.Component Query Unit Void m
 component =
     H.mkComponent
@@ -127,6 +131,8 @@ component =
                             [ HH.slot_ (Proxy :: _ "home") unit Home.component unit ]
                         User who ->
                             [ HH.slot_ (Proxy :: _ "user") unit User.component who ]
+                        Lottery slug ->
+                            [ HH.slot_ (Proxy :: _ "lottery" ) unit Lottery.component slug ]
                         AuthCallback _ -> do
                             [ HH.div_ [ HH.text "Logging in..." ] ]
                         AuthRequired sub ->
@@ -183,6 +189,10 @@ component =
                                             [ HH.slot_ (Proxy :: _ "user") unit User.component username
                                             , HH.slot_ (Proxy :: _ "auditLog") unit AuditLog.component (Tuple username pagination)
                                             ]
+                                        CreateLotto ->
+                                            []
+                                        MyLotteries ->
+                                            []
                                 Nothing ->
                                     [ HH.div_ [ HH.text "Auth required" ] ]
                     Nothing ->

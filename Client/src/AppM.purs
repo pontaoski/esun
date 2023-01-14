@@ -11,6 +11,7 @@ import Capability.DepositCode (class DepositCode)
 import Capability.Funds (class Funds)
 import Capability.Logging (class Logging, LogLevel(..))
 import Capability.Logging as Logging
+import Capability.Lotto (class Lottos)
 import Capability.Navigate (class Navigate, navigate)
 import Data.Either (Either(..))
 import Data.Error (explain)
@@ -148,3 +149,45 @@ instance fundsAppM :: Funds AppM where
                 pure $ Left $ explain "adjusting balance" Error.AuthRequired
             Nothing ->
                 pure $ Left $ explain "adjusting balance" Error.AuthRequired
+
+instance lottosAppM :: Lottos AppM where
+    createLotto req = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.createLotto baseUrl me.token req
+                pure res
+            Nothing ->
+                pure $ Left $ explain "creating lottery" Error.AuthRequired
+
+    myLottos = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.myLotteries baseUrl me.token
+                pure res
+            Nothing ->
+                pure $ Left $ explain "getting lotteries" Error.AuthRequired
+
+    lottoInfo slug = do
+        { baseUrl, currentUser } <- getStore
+        res <- Request.getLottery baseUrl (map _.token currentUser) slug
+        pure res
+
+    buyTicket slug = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.buyTicket baseUrl me.token slug
+                pure res
+            Nothing ->
+                pure $ Left $ explain "buying ticket" Error.AuthRequired
+
+    rollWinner slug = do
+        { baseUrl, currentUser } <- getStore
+        case currentUser of
+            Just me -> do
+                res <- Request.rollLotteryWinner baseUrl me.token slug
+                pure res
+            Nothing ->
+                pure $ Left $ explain "rolling winner" Error.AuthRequired

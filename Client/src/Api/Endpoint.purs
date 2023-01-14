@@ -4,8 +4,8 @@ import Prelude hiding ((/))
 
 import Data.Either (note)
 import Data.Generic.Rep (class Generic)
-import Data.Lottoname (Lottoname)
-import Data.Lottoname as Lottoname
+import Data.Lotto (Lottoname)
+import Data.Lotto as Lotto
 import Data.Maybe (Maybe)
 import Data.Shopname (Shopname)
 import Data.Shopname as Shopname
@@ -50,7 +50,7 @@ sname :: RouteDuplex' String -> RouteDuplex' Shopname
 sname = as Shopname.toString (Shopname.parse >>> note "Bad shopname")
 
 lname :: RouteDuplex' String -> RouteDuplex' Lottoname
-lname = as Lottoname.toString (Lottoname.parse >>> note "Bad lottoname")
+lname = as Lotto.toString (Lotto.parse >>> note "Bad lottoname")
 
 endpointCodec :: RouteDuplex' Endpoint
 endpointCodec = root $ sum

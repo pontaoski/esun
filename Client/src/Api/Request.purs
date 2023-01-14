@@ -256,12 +256,12 @@ myLotteries baseUrl token = do
             Left er ->
                 pure $ Left $ explain "parsing lotto response" er
             Right { lottos } ->
-                pure $ Right lottos
+                pure $ Right lottos.pages
 
 rollLotteryWinner :: forall m. MonadAff m => BaseURL -> Token -> Lottoname -> m (Either Error Customer)
 rollLotteryWinner baseUrl token name = do
     res <- liftAff $ request $
-        (defaultRequest baseUrl (Just token) { endpoint: RollWinner name, method: Post })
+        (defaultRequest baseUrl (Just token) { endpoint: RollWinner name, method: Post Nothing })
     case res of
         Left e ->
             pure $ Left $ explain "getting lottos" e
@@ -272,10 +272,10 @@ rollLotteryWinner baseUrl token name = do
                 pure $ Right who
 
 -- TODO: tickets
-getLottery :: forall m. MonadAff m => BaseURL -> Token -> Lottoname -> m (Either Error Lotto)
+getLottery :: forall m. MonadAff m => BaseURL -> Maybe Token -> Lottoname -> m (Either Error Lotto)
 getLottery baseUrl token name = do
     res <- liftAff $ request $
-        (defaultRequest baseUrl (Just token) { endpoint: GetLotto name, method: Get })
+        (defaultRequest baseUrl token { endpoint: GetLotto name, method: Get })
     case res of
         Left e ->
             pure $ Left $ explain "getting lottery" e
@@ -286,7 +286,14 @@ getLottery baseUrl token name = do
                 pure $ Right lotto
 
 buyTicket :: forall m. MonadAff m => BaseURL -> Token -> Lottoname -> m (Either Error Unit)
-buyTicket = ?a
+buyTicket baseUrl token lotto = do
+    res <- liftAff $ request $
+        (defaultRequest baseUrl (Just token) { endpoint: BuyLottoTicket lotto, method: Post Nothing })
+    case res of
+        Left e ->
+            pure $ Left $ explain "buying ticket" e
+        Right _ ->
+            pure $ Right unit
 
 tokenKey = "token" :: String
 

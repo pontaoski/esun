@@ -2,25 +2,22 @@ module Page.Lottery
     ( component
     ) where
 
-import Prelude
+import PreludeP
 
 import Capability.Lotto (class Lottos, lottoInfo)
-import Component.HTML.Utils (conditional, css)
-import Data.Either (Either(..))
-import Data.Error (Error)
 import Data.Error as Error
-import Data.Lotto (Lotto, Lottoname(..))
-import Data.Maybe (Maybe(..))
-import Effect.Aff.Class (class MonadAff)
-import Halogen as H
-import Halogen.HTML as HH
+import Data.Int (toNumber)
+import Data.Lotto (Lotto, Lottoname)
+import HTML as H
 
 type State =
     { lotto :: Maybe (Either Error Lotto)
+    , lottoname :: Lottoname
     }
 
 data Action
-    = Initialize Lottoname
+    = Receive Lottoname
+    | Initialize
 
 component
     :: forall q o m
@@ -33,38 +30,57 @@ component =
         , render
         , eval: H.mkEval $ H.defaultEval
             { handleAction = handleAction
-            , initialize = Nothing
-            , receive = \x -> Just $ Initialize x
+            , initialize = Just Initialize
+            , receive = \x -> Just $ Receive x
             }
         }
 
     where
     initialState :: Lottoname -> State
-    initialState _ =
-        { lotto: Nothing }
+    initialState lottoname =
+        { lotto: Nothing, lottoname }
 
     render :: State -> H.ComponentHTML Action () m
     render state =
-        HH.div [ css ["folder"] ]
-            [ HH.div [ css ["folder-tab"] ] [ HH.text title ]
-            , HH.div [ css ["folder-body"] ] [ contents ]
-            ]
+        H.folder title contents
         where
         title = "Lottery"
-        contents = HH.div [ css ["flex", "flex-col", "items-center"] ]
+        contents = H.div [ H.css ["flex", "flex-col", "items-center", "space-y-2"] ]
             case state.lotto of
                 Nothing ->
-                    [ HH.text "Loading..."
+                    [ H.text "Loading..."
                     ]
                 Just (Left err) ->
-                    [ HH.text $ "Failed to get lottery :/ " <> Error.toString err
+                    [ H.text $ "Failed to get lottery :/ " <> Error.toString err
                     ]
                 Just (Right lotto) ->
-                    [ HH.text $ lotto.title
+                    [ H.span [ H.css ["text-lg"] ] [ H.text $ lotto.title ]
+                    , H.text lotto.description
+                    , H.div [ H.css ["flex", "flex-row", "space-x-2", "w-full"] ]
+                        (map box
+                            [ col [ txt "Costs", big $ show lotto.ticketPrice<>"d", txt "per ticket" ]
+                            , col [ txt "Up to", big $ show lotto.maxTicketsPerCustomer, txt "tickets a customer" ]
+                            , col [ txt "The house takes", big $ (show $ lotto.houseCut*(toNumber 100))<>"%", txt "of the pot" ]
+                            ]
+                        )
                     ]
+
+        txt text =
+            H.span [ H.css ["text-sm"] ] [ H.text text ]
+        big text =
+            H.span [ H.css ["text-lg"] ] [ H.text text ]
+        col items =
+            H.div [ H.css ["flex", "flex-col", "items-center"] ] items
+        box inner =
+            H.div [ H.css ["bg-slate-100", "border-solid", "border", "border-slate-400", "rounded", "px-4", "py-2", "w-1/3"] ] [inner]
 
     handleAction :: Action -> H.HalogenM State Action () o m Unit
     handleAction = case _ of
-        Initialize str -> do
-            lotto <- lottoInfo str
+        Initialize -> do
+            H.modify_ _ { lotto = Nothing }
+            lname <- H.gets _.lottoname
+            lotto <- lottoInfo lname
             H.modify_ _ { lotto = Just lotto }
+        Receive x -> do
+            H.modify_ _ { lottoname = x }
+            handleAction Initialize

@@ -3,10 +3,14 @@ module Component.HTML.Utils where
 import Prelude
 
 import Data.AuditLogEntry (AuditLogEntry, AuditLogCustomer)
+import Data.Int as Int
+import Data.Maybe as Maybe
+import Data.Number as Number
 import Data.Route (Route(..), routeCodec)
 import Data.Username (Username(..))
 import Data.Username as Username
 import Halogen.HTML as HH
+import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Routing.Duplex (print)
 
@@ -34,3 +38,25 @@ conditional cond html =
         html
     else
         HH.text ""
+
+folder :: forall i w. String -> HH.HTML i w -> HH.HTML i w
+folder title body =
+    HH.div [ css ["folder"] ]
+        [ HH.div [ css ["folder-tab"] ] [ HH.text title ]
+        , HH.div [ css ["folder-body"] ] [ body ]
+        ]
+
+formField :: forall i w. String -> String -> HP.InputType -> String -> (String -> w) -> HH.HTML i w
+formField id label inputType value onEv =
+    HH.div_
+        [ HH.label [ HP.for id ] [ HH.text label ]
+        , HH.input [ HP.id id, HP.type_ inputType, HP.value value, HE.onValueInput onEv ]
+        ]
+
+intHandler :: forall a. (Int -> a) -> (String -> a)
+intHandler cb =
+    \new -> cb $ Maybe.fromMaybe 0 $ Int.fromString new
+
+numHandler :: forall a. (Number -> a) -> (String -> a)
+numHandler cb =
+    \new -> cb $ Maybe.fromMaybe (Int.toNumber 0) $ Number.fromString new

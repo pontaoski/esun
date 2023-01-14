@@ -40,6 +40,7 @@ import Page.TransferFunds as TransferFunds
 import Page.UseDepositCode as UseDepositCode
 import Page.UseWithdrawalCode as UseWithdrawalCode
 import Page.User as User
+import Page.CreateLottery as CreateLottery
 import Routing.Duplex as RD
 import Routing.Hash (getHash)
 import Store as Store
@@ -68,6 +69,7 @@ type ChildSlots =
     , useDepositCode :: OpaqueSlot Unit
     , useWithdrawalCode :: OpaqueSlot Unit
     , lottery :: OpaqueSlot Unit
+    , createLottery :: OpaqueSlot Unit
     )
 
 component
@@ -190,9 +192,12 @@ component =
                                             , HH.slot_ (Proxy :: _ "auditLog") unit AuditLog.component (Tuple username pagination)
                                             ]
                                         CreateLotto ->
-                                            []
+                                            [ HH.slot_ (Proxy :: _ "user") unit User.component x.username
+                                            , HH.slot_ (Proxy :: _ "createLottery" ) unit CreateLottery.component unit
+                                            ]
                                         MyLotteries ->
-                                            []
+                                            [
+                                            ]
                                 Nothing ->
                                     [ HH.div_ [ HH.text "Auth required" ] ]
                     Nothing ->

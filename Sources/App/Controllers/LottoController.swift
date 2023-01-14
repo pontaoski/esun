@@ -23,7 +23,7 @@ struct LottoController: RouteCollection {
     }
     func rollWinner(on req: Request) async throws -> RollWinner {
         let user = try req.auth.require(User.self)
-        let slug = req.parameters.get(":lotto")!
+        let slug = req.parameters.get("lotto")!
         guard let lotto = try await Lotto.query(on: req.db).filter(\.$slug == slug).first() else {
             throw Abort(.notFound)
         }
@@ -74,7 +74,7 @@ struct LottoController: RouteCollection {
     }
     func getInformation(on req: Request) async throws -> GetInformationResponse {
         let user = try req.auth.require(User.self)
-        let slug = req.parameters.get(":lotto")!
+        let slug = req.parameters.get("lotto")!
         guard let lotto = try await Lotto.query(on: req.db).filter(\.$slug == slug).first() else {
             throw Abort(.notFound)
         }
@@ -89,7 +89,7 @@ struct LottoController: RouteCollection {
     }
     func buyTicket(on req: Request) async throws -> BuyTicketResponse {
         let user = try req.auth.require(User.self)
-        let slug = req.parameters.get(":lotto")!
+        let slug = req.parameters.get("lotto")!
         guard let lotto = try await Lotto.query(on: req.db).filter(\.$slug == slug).first() else {
             throw Abort(.notFound)
         }

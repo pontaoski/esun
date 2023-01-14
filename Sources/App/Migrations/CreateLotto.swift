@@ -12,6 +12,7 @@ struct CreateLotto: AsyncMigration {
             .field("title", .string, .required)
             .field("description", .string, .required)
             .field("slug", .string, .required)
+            .unique(on: "slug", name: "lotto_unique_slug")
             .create()
 
         try await database.schema("lotto_tickets")

@@ -60,6 +60,7 @@
     @apply bg-slate-200;
     @apply hover:bg-slate-300;
     @apply active:bg-slate-400 shadow-none;
+    @apply disabled:bg-slate-100 disabled:text-slate-600;
 }
 .button-small {
     @apply px-2 py-1 text-sm;

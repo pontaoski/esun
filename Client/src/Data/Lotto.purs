@@ -2,6 +2,7 @@ module Data.Lotto
   ( Lotto
   , Lottoname
   , codec
+  , fromString
   , lottonameCodec
   , parse
   , toString
@@ -29,6 +30,9 @@ lottonameCodec = (dimap toString) Lottoname CA.string
 parse :: String -> Maybe Lottoname
 parse "" = Nothing
 parse str = Just (Lottoname str)
+
+fromString :: String -> Lottoname
+fromString str = Lottoname str
 
 toString :: Lottoname -> String
 toString (Lottoname str) = str
